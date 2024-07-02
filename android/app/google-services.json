@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "564309313172",
+    "project_id": "assets-elernning-1a64e",
+    "storage_bucket": "assets-elernning-1a64e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564309313172:android:3a47daf3b7d69a21aed681",
+        "android_client_info": {
+          "package_name": "com.example.assets_elerning"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "564309313172-1tc5g725o1jebkkna2f8bf24ipggc0n2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzaV2QUvlUBBdQlRWTHbddbxatyw_MsqI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "564309313172-1tc5g725o1jebkkna2f8bf24ipggc0n2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
