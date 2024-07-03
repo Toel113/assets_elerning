@@ -35,10 +35,11 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: myIndex != 2
           ? AppBar(
+            backgroundColor: Color.fromARGB(255, 240, 187, 233),
               automaticallyImplyLeading: false,
               title: GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacement(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => DashboardPage(
@@ -82,7 +83,6 @@ class _DashboardPageState extends State<DashboardPage> {
         showUnselectedLabels: true,
         onTap: (index) {
           if (index == 2) {
-            // If Log out is pressed
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => LoginPage()),

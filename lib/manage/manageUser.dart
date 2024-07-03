@@ -71,6 +71,7 @@ class _ManageUserPageState extends State<ManageUserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Manage Users'),
       ),
       body: Center(
@@ -85,16 +86,6 @@ class _ManageUserPageState extends State<ManageUserPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    'Manage User',
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Color.fromARGB(255, 29, 29, 29),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 10),
                 Expanded(
                   child: Padding(
@@ -237,7 +228,6 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
                         onChanged: (newValue) {
                           setState(() {
                             selectedValue1 = newValue;
-                            // Call function to update status based on selected course
                             getDataStatus();
                           });
                         },
@@ -292,7 +282,6 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       if (userDocSnapshot.exists) {
         var status = userDocSnapshot.data()?['Status'];
         setState(() {
-          // Update selectStatus based on fetched status
           if (status == "False") {
             selectStatus = items2[0];
           } else if (status == "True") {
@@ -313,7 +302,6 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       var dataStatus =
           FirebaseFirestore.instance.collection('User').doc(documentId);
       var userDocRef = dataStatus.collection('Course').doc(selectedValue1!);
-      // Update 'Status' field in Firestore based on selected status
       await userDocRef.update({
         "Status": selectStatus,
       });

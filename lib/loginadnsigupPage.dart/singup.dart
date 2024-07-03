@@ -53,6 +53,7 @@ class _SignUpPageState extends State<SignUpPage> {
           if (snapshot.connectionState == ConnectionState.done) {
             return Scaffold(
               appBar: AppBar(
+                backgroundColor: Color.fromARGB(255, 240, 187, 233),
                 automaticallyImplyLeading: false,
                 title: GestureDetector(
                   onTap: () {

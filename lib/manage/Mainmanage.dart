@@ -24,6 +24,7 @@ class _MainmanagePage extends State<MainmanagePage> {
     return Scaffold(
       appBar: myIndex != 2
           ? AppBar(
+            backgroundColor: Color.fromARGB(255, 240, 187, 233),
               automaticallyImplyLeading: false,
               title: GestureDetector(
                 onTap: () {

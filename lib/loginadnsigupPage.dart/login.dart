@@ -1,8 +1,3 @@
-// import 'package:assets_elerning/Course/dashboard.dart';
-// import 'package:assets_elerning/LoginAndSignup/Repassword.dart';
-// import 'package:assets_elerning/LoginAndSignup/signup.dart';
-// import 'package:assets_elerning/manage/mainmanage.dart';
-// import 'package:assets_elerning/model/User.dart';
 import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/singup.dart';
@@ -12,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:screen_protector/screen_protector.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,12 +22,31 @@ class _LoginPageState extends State<LoginPage> {
   final Users profile = Users();
   bool _isObscure = true;
 
+  void initState() {
+    super.initState();
+    _enableScreenProtector();
+  }
+
+  // @override
+  // void dispose() {
+  //   _disableScreenProtector();
+  //   super.dispose();
+  // }
+
+  Future<void> _enableScreenProtector() async {
+    await ScreenProtector.preventScreenshotOn();
+  }
+
+  // Future<void> _disableScreenProtector() async {
+  //   await ScreenProtector.preventScreenshotOff();
+  // }
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 240, 187, 233),
         automaticallyImplyLeading: false,
         title: GestureDetector(
           onTap: () {
@@ -48,9 +63,12 @@ class _LoginPageState extends State<LoginPage> {
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
-                return Image.network(
-                  snapshot.data!,
-                  fit: BoxFit.contain,
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.network(
+                    snapshot.data!,
+                    fit: BoxFit.contain,
+                  ),
                 );
               }
             },
@@ -211,9 +229,9 @@ class _LoginPageState extends State<LoginPage> {
                                 );
                               }
                             });
-                          } on FirebaseAuthException catch (e) {
+                          } on FirebaseAuthException catch (_) {
                             Fluttertoast.showToast(
-                              msg: e.message ?? "An error occurred",
+                              msg: "Email or Password incorrect",
                               gravity: ToastGravity.CENTER,
                             );
                           }

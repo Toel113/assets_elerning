@@ -76,7 +76,7 @@ class _FirstPageState extends State<FirstPage> {
         automaticallyImplyLeading: true,
         title: GestureDetector(
           onTap: () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (context) =>
@@ -84,20 +84,20 @@ class _FirstPageState extends State<FirstPage> {
             );
           },
           child: FutureBuilder<String>(
-                  future: getUrlImages1(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Image.network(
-                        snapshot.data!,
-                        fit: BoxFit.contain,
-                      );
-                    }
-                  },
-                ),
+            future: getUrlImages1(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return Image.network(
+                  snapshot.data!,
+                  fit: BoxFit.contain,
+                );
+              }
+            },
+          ),
         ),
         centerTitle: true,
       ),
