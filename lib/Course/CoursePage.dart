@@ -78,9 +78,6 @@ class _CoursePageState extends State<CoursePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Padding(

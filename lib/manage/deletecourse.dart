@@ -181,19 +181,32 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
 
   Future<void> deleteSelectedCourse() async {
     try {
-      var userDocRef = FirebaseFirestore.instance
+      var CourseRef = FirebaseFirestore.instance
           .collection('Course')
           .doc(widget.document.id);
 
+      var subCollectionRef = FirebaseFirestore.instance
+          .collection('NameStation')
+          .doc(widget.document.id);
+
+      var userRef = FirebaseFirestore.instance.collection('User');
+      QuerySnapshot userSnapshot = await userRef.get();
+
       if (selectedValue == null) {
-        await userDocRef.delete();
-        print('No dropdown item selected or document ID is null');
+        await CourseRef.delete();
+        await subCollectionRef.delete();
+        for (QueryDocumentSnapshot userDoc in userSnapshot.docs) {
+          CollectionReference courseRef =
+              userDoc.reference.collection('Course');
+          DocumentReference courseDocRef = courseRef.doc(widget.document.id);
+          await courseDocRef.delete();
+        }
         setState(() {});
-        widget.onCourseDeleted?.call(); // Notify parent widget
+        widget.onCourseDeleted?.call();
         return;
       }
 
-      var subcollectionRef = userDocRef.collection(selectedValue!);
+      var subcollectionRef = CourseRef.collection(selectedValue!);
       var querySnapshot = await subcollectionRef.get();
 
       if (querySnapshot.docs.isEmpty) {
@@ -202,8 +215,9 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       }
 
       var batch = FirebaseFirestore.instance.batch();
-      querySnapshot.docs.forEach((doc) {
+      querySnapshot.docs.forEach((doc) async {
         batch.delete(doc.reference);
+        await subCollectionRef.update({selectedValue!: FieldValue.delete()});
       });
       await batch.commit();
 
@@ -213,7 +227,7 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       setState(() {
         selectedValue = dropdownItems.isNotEmpty ? dropdownItems[0] : null;
       });
-      widget.onCourseDeleted?.call(); // Notify parent widget
+      widget.onCourseDeleted?.call();
     } catch (e) {
       print('Error deleting courses in subcollection: $e');
     }

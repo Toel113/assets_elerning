@@ -1,4 +1,3 @@
-
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
 import 'package:assets_elerning/manage/manageCourse.dart';
@@ -9,14 +8,14 @@ class MainmanagePage extends StatefulWidget {
   const MainmanagePage({super.key});
 
   @override
-  _MainmanagePage createState() => _MainmanagePage();
+  _MainmanagePageState createState() => _MainmanagePageState();
 }
 
-class _MainmanagePage extends State<MainmanagePage> {
+class _MainmanagePageState extends State<MainmanagePage> {
   int myIndex = 0;
   final List<Widget> _children = [
     const ManagePage(),
-    const ManageUserPage(),
+    ManageUserPage(key: UniqueKey()), // Add UniqueKey here
   ];
 
   @override
@@ -24,13 +23,14 @@ class _MainmanagePage extends State<MainmanagePage> {
     return Scaffold(
       appBar: myIndex != 2
           ? AppBar(
-            backgroundColor: Color.fromARGB(255, 240, 187, 233),
+              backgroundColor: Color.fromARGB(255, 255, 255, 255),
               automaticallyImplyLeading: false,
               title: GestureDetector(
                 onTap: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const MainmanagePage()),
+                    MaterialPageRoute(
+                        builder: (context) => const MainmanagePage()),
                   );
                 },
                 child: FutureBuilder<String>(
@@ -52,20 +52,18 @@ class _MainmanagePage extends State<MainmanagePage> {
               centerTitle: true,
             )
           : null,
-      // drawer: navigationDrawer(),
       body: IndexedStack(
         index: myIndex,
         children: _children,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Set the current index
+        currentIndex: myIndex,
         selectedItemColor: const Color.fromARGB(255, 24, 24, 24),
         unselectedItemColor: Colors.grey,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         onTap: (index) {
           if (index == 2) {
-            // If Log out is pressed
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => LoginPage()),
@@ -73,6 +71,9 @@ class _MainmanagePage extends State<MainmanagePage> {
           } else {
             setState(() {
               myIndex = index;
+              if (index == 1) {
+                _children[1] = ManageUserPage(key: UniqueKey()); // Update the key
+              }
             });
           }
         },

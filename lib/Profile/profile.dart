@@ -56,17 +56,14 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Profile'),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Container(
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color.fromARGB(255, 155, 154, 154)),
+              border:
+                  Border.all(color: const Color.fromARGB(255, 155, 154, 154)),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Column(
@@ -79,20 +76,21 @@ class _ProfilePageState extends State<ProfilePage> {
                       radius: 50,
                       child: ClipOval(
                         child: FutureBuilder<String>(
-                  future: getUrlImages1(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Image.network(
-                        snapshot.data!,
-                        fit: BoxFit.contain,
-                      );
-                    }
-                  },
-                ),
+                          future: getUrlImages1(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return CircularProgressIndicator();
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              return Image.network(
+                                snapshot.data!,
+                                fit: BoxFit.contain,
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -152,8 +150,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    border:
-                        Border.all(color: const Color.fromARGB(255, 155, 154, 154)),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 155, 154, 154)),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Column(
@@ -188,16 +186,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         labelText: 'Phone Number',
                         fieldData: 'PhoneNumber',
                         validator: MultiValidator([
-                          RequiredValidator(errorText: "Enter Your New PhoneNumber"),
+                          RequiredValidator(
+                              errorText: "Enter Your New PhoneNumber"),
                         ]),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                buildButton(context, 'Membership & Subscriptions', const MembershipPage()),
+                buildButton(context, 'Membership & Subscriptions',
+                    const MembershipPage()),
                 buildButton(context, 'Purchase History', const PurchasePage()),
-                buildButton(context, 'Add/Change Credit Card', const Add_chang_CreditCard()),
+                buildButton(context, 'Add/Change Credit Card',
+                    const Add_chang_CreditCard()),
                 buildButton(context, 'Address', const Address()),
                 buildButton(context, 'Contact', const Contant()),
                 const SizedBox(height: 20),
@@ -227,15 +228,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 hintText: hintText,
                 labelText: labelText,
               ),
-              validator: RequiredValidator(errorText: "Enter your $labelText").call,
+              validator:
+                  RequiredValidator(errorText: "Enter your $labelText").call,
             ),
           ),
           const SizedBox(width: 10),
           TextButton(
             onPressed: () async {
               String newData = controller.text;
-              await SetAuthentication(
-                  widget.UserEmail, fieldData, newData);
+              await SetAuthentication(widget.UserEmail, fieldData, newData);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Updated $labelText successfully'),
@@ -270,8 +271,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> SetAuthentication(String userEmail, String fieldData,
-      String newData) async {
+  Future<void> SetAuthentication(
+      String userEmail, String fieldData, String newData) async {
     User? user = FirebaseAuth.instance.currentUser;
 
     try {

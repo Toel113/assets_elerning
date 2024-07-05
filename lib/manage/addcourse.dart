@@ -156,6 +156,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
+            flex: 2,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 27.0),
               child: TextFormField(
@@ -178,8 +179,9 @@ class _AddCoursePageState extends State<AddCoursePage> {
             ),
           ),
           Expanded(
+            flex: 2,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 27.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: urlVideos != null
                   ? Text(urlVideos!)
                   : ElevatedButton(
@@ -188,6 +190,18 @@ class _AddCoursePageState extends State<AddCoursePage> {
                       },
                       child: const Text('Upload Video'),
                     ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: IconButton(
+              icon: const Icon(Icons.delete),
+              color: Colors.red,
+              onPressed: () {
+                setState(() {
+                  stationData.removeAt(index);
+                });
+              },
             ),
           ),
         ],

@@ -46,11 +46,11 @@ class _LoginPageState extends State<LoginPage> {
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 240, 187, 233),
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
         automaticallyImplyLeading: false,
         title: GestureDetector(
           onTap: () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
             );

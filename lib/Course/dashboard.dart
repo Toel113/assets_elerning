@@ -35,7 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: myIndex != 2
           ? AppBar(
-            backgroundColor: Color.fromARGB(255, 240, 187, 233),
+              backgroundColor: Color.fromARGB(255, 255, 255, 255),
               automaticallyImplyLeading: false,
               title: GestureDetector(
                 onTap: () {

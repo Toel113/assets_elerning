@@ -38,7 +38,6 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
-
     return FutureBuilder(
         future: initializeFirebase(),
         builder: (context, snapshot) {
@@ -53,11 +52,11 @@ class _SignUpPageState extends State<SignUpPage> {
           if (snapshot.connectionState == ConnectionState.done) {
             return Scaffold(
               appBar: AppBar(
-                backgroundColor: Color.fromARGB(255, 240, 187, 233),
+                backgroundColor: Color.fromARGB(255, 255, 254, 254),
                 automaticallyImplyLeading: false,
                 title: GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => LoginPage()),
                     );
@@ -86,8 +85,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: screenWidth * 0.8,
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                          color: const Color.fromARGB(255, 155, 154, 154)),
+                      border:
+                          Border.all(color: Color.fromARGB(255, 255, 255, 255)),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Form(

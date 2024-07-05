@@ -67,13 +67,14 @@ class _ManageUserPageState extends State<ManageUserPage> {
     return dataNames;
   }
 
+  Future<void> _refresh() async {
+    await fetchName();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Manage Users'),
-      ),
+      appBar: AppBar(title: Center(child: Text('Manage User'))),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -90,34 +91,37 @@ class _ManageUserPageState extends State<ManageUserPage> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: ListView.builder(
-                      itemCount: userDocs?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        var document = userDocs![index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: NameColumn(
-                                  document: document,
-                                  getDatashowName: getDatashowName,
+                    child: RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: ListView.builder(
+                        itemCount: userDocs?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          var document = userDocs![index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: NameColumn(
+                                    document: document,
+                                    getDatashowName: getDatashowName,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 20),
-                              Expanded(
-                                flex: 3,
-                                child: CourseDropdownColumn(
-                                  document: document,
-                                  getDataDropdown: getDataDropdown,
+                                SizedBox(width: 20),
+                                Expanded(
+                                  flex: 3,
+                                  child: CourseDropdownColumn(
+                                    document: document,
+                                    getDataDropdown: getDataDropdown,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -180,6 +184,7 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
   String? selectStatus;
   List<String> items1 = [];
   List<String> items2 = ["False", "True"];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -196,9 +201,13 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
         if (items1.isNotEmpty) {
           selectedValue1 = items1[0];
         }
+        isLoading = false;
       });
     } catch (e) {
       print("Error fetching dropdown data: $e");
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -221,23 +230,25 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
               padding: const EdgeInsets.all(0.0),
               child: Container(
                 height: 40,
-                child: items1.isEmpty
-                    ? Center(child: Text('No courses found'))
-                    : DropdownButton<String>(
-                        value: selectedValue1,
-                        onChanged: (newValue) {
-                          setState(() {
-                            selectedValue1 = newValue;
-                            getDataStatus();
-                          });
-                        },
-                        items: items1.map((String document) {
-                          return DropdownMenuItem<String>(
-                            value: document,
-                            child: Text(document),
-                          );
-                        }).toList(),
-                      ),
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : items1.isEmpty
+                        ? Center(child: Text('No courses found'))
+                        : DropdownButton<String>(
+                            value: selectedValue1,
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedValue1 = newValue;
+                                getDataStatus();
+                              });
+                            },
+                            items: items1.map((String document) {
+                              return DropdownMenuItem<String>(
+                                value: document,
+                                child: Text(document),
+                              );
+                            }).toList(),
+                          ),
               ),
             ),
           ),
