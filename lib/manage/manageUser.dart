@@ -75,60 +75,51 @@ class _ManageUserPageState extends State<ManageUserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Center(child: Text('Manage User'))),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              border:
-                  Border.all(color: const Color.fromARGB(255, 155, 154, 154)),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: 10),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: RefreshIndicator(
-                      onRefresh: _refresh,
-                      child: ListView.builder(
-                        itemCount: userDocs?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          var document = userDocs![index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: NameColumn(
-                                    document: document,
-                                    getDatashowName: getDatashowName,
-                                  ),
-                                ),
-                                SizedBox(width: 20),
-                                Expanded(
-                                  flex: 3,
-                                  child: CourseDropdownColumn(
-                                    document: document,
-                                    getDataDropdown: getDataDropdown,
-                                  ),
-                                ),
-                              ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 10),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView.builder(
+                  itemCount: userDocs?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    var document = userDocs![index];
+                    return Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(5.0),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Color.fromARGB(255, 154, 154, 154)),
+                            borderRadius: BorderRadius.circular(10.0)),
+                        child: ListTile(
+                          title: Expanded(
+                            flex: 2,
+                            child: NameColumn(
+                              document: document,
+                              getDatashowName: getDatashowName,
                             ),
-                          );
-                        },
+                          ),
+                          subtitle: Expanded(
+                            flex: 3,
+                            child: CourseDropdownColumn(
+                              document: document,
+                              getDataDropdown: getDataDropdown,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -157,7 +148,9 @@ class NameColumn extends StatelessWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
             String fullname = snapshot.data ?? 'Unknown';
-            return Center(child: Text(fullname));
+            return Text(
+              fullname,
+            );
           }
         },
       ),
@@ -214,7 +207,7 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
   Future<void> fetchDropdownDataStatus() async {
     setState(() {
       if (items2.isNotEmpty) {
-        selectStatus = items2[0]; // Default selection
+        selectStatus = items2[0];
       }
     });
   }

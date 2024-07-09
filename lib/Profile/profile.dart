@@ -1,12 +1,9 @@
-import 'package:assets_elerning/MenuProfile/Add_Chang_Credit_card.dart';
-import 'package:assets_elerning/MenuProfile/Address.dart';
-import 'package:assets_elerning/MenuProfile/Contant.dart';
-import 'package:assets_elerning/MenuProfile/Membership.dart';
-import 'package:assets_elerning/MenuProfile/PurchaseHistory.dart';
 import 'package:assets_elerning/api/loadImages.dart';
+import 'package:assets_elerning/payment/historypurches.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 
 class NewData {
@@ -194,13 +191,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                buildButton(context, 'Membership & Subscriptions',
-                    const MembershipPage()),
-                buildButton(context, 'Purchase History', const PurchasePage()),
-                buildButton(context, 'Add/Change Credit Card',
-                    const Add_chang_CreditCard()),
-                buildButton(context, 'Address', const Address()),
-                buildButton(context, 'Contact', const Contant()),
+                // buildButton(context, 'Membership & Subscriptions',
+                //     const MembershipPage()),
+                buildButton(context, 'Purchase History',
+                    Historypurches(userEmail: widget.UserEmail)),
+                // buildButton(context, 'Add/Change Credit Card',
+                //     const Add_chang_CreditCard()),
+                // buildButton(context, 'Address', const Address()),
+                // buildButton(context, 'Contact', const Contant()),
                 const SizedBox(height: 20),
               ],
             ),
@@ -261,13 +259,18 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       },
       style: ElevatedButton.styleFrom(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        padding: EdgeInsets.zero,
-        minimumSize: const Size(double.infinity, 40),
+        padding: EdgeInsets.symmetric(vertical: 12), // Adjust padding as needed
+        minimumSize: Size(double.infinity, 40),
       ),
-      child: Text(text),
+      child: Text(
+        text,
+        style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold), // Adjust text style as needed
+      ),
     );
   }
 

@@ -269,8 +269,7 @@ class _FirstPageState extends State<FirstPage> {
                                           );
                                         }
                                       },
-                                      child:
-                                          const Text('Complete and Continue'),
+                                      child: const Text('Continue'),
                                     ),
                                     const SizedBox(height: 20)
                                   ],
@@ -312,8 +311,13 @@ class _FirstPageState extends State<FirstPage> {
       loadingComplete.add(doc.id);
     }
 
-    var nameDocs = userDocs!.map((doc) => doc.id).toList();
-    String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
+    var nameDocs = userDocs?.map((doc) => doc.id).toList() ?? [];
+    if (nameDocs.isEmpty) {
+      print("No user documents found.");
+      return null;
+    }
+
+    String firstDocId = nameDocs[0];
     DocumentReference userDocRef = FirebaseFirestore.instance
         .collection('User')
         .doc(firstDocId)
@@ -322,6 +326,7 @@ class _FirstPageState extends State<FirstPage> {
 
     double totalDocuments = loadingComplete.length.toDouble();
     double percentage = 100 / totalDocuments;
+
     var userDocSnapshot = await userDocRef.get();
     double currentCompleteValue = 0.0;
     if (userDocSnapshot.exists) {
@@ -335,7 +340,8 @@ class _FirstPageState extends State<FirstPage> {
     double newCompleteValue = currentCompleteValue + percentage;
 
     if (newCompleteValue >= 99.99) {
-      newCompleteValue = 99.99;
+      newCompleteValue = 100;
+      setUpdateComplete(documentId, subcollectionName, newCompleteValue);
       await userDocRef.update({
         subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
         "Status": "True",
@@ -348,6 +354,26 @@ class _FirstPageState extends State<FirstPage> {
     }
 
     return newCompleteValue;
+  }
+
+  Future<void> setUpdateComplete(String documentId, String subcollectionName,
+      double newCompleteValue) async {
+    var nameDocs = userDocs?.map((doc) => doc.id).toList() ?? [];
+    if (nameDocs.isEmpty) {
+      print("No user documents found.");
+      return;
+    }
+
+    String firstDocId = nameDocs[0];
+    DocumentReference userDocRef =
+        FirebaseFirestore.instance.collection('User').doc(firstDocId);
+
+    var docRef = userDocRef.collection("CompleteCourse").doc(documentId);
+    await docRef.set({
+      subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
+      "Status": "True",
+      "Complete $subcollectionName": "Complete Course : $subcollectionName"
+    });
   }
 
   Future<String?> getReturnDocumentID(

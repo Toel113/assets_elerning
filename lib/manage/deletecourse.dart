@@ -67,71 +67,68 @@ class _DeleteCoursePageState extends State<DeleteCoursePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: 10),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: userDocs == null || userDocs!.isEmpty
-                        ? Center(child: Text('No courses found'))
-                        : ListView.builder(
-                            itemCount: userDocs!.length,
-                            itemBuilder: (context, index) {
-                              var document = userDocs![index];
-                              var documentName = document.id;
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: const Color.fromARGB(
-                                            255, 155, 154, 154)),
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                              color: const Color.fromARGB(
-                                                  255, 155, 154, 154)),
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.center,
-                                          child: Text(documentName),
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: CourseDropdownColumn(
-                                          document: document,
-                                          getDataDropdown: getDataDropdown,
-                                          onCourseDeleted: () {
-                                            fetchName(); // Refresh userDocs
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: userDocs == null || userDocs!.isEmpty
+                      ? Center(child: Text('No courses found'))
+                      : ListView.builder(
+                          itemCount: userDocs!.length,
+                          itemBuilder: (context, index) {
+                            var document = userDocs![index];
+                            var documentName = document.id;
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: const Color.fromARGB(
+                                          255, 155, 154, 154)),
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
-                              );
-                            },
-                          ),
-                  ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: const Color.fromARGB(
+                                                255, 155, 154, 154)),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(8.0),
+                                          topRight: Radius.circular(8.0),
+                                        ),
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: Text(documentName),
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: CourseDropdownColumn(
+                                        document: document,
+                                        getDataDropdown: getDataDropdown,
+                                        onCourseDeleted: () {
+                                          fetchName(); // Refresh userDocs
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:assets_elerning/Course/stationPage.dart';
-import 'package:assets_elerning/SellCourse/sellcourse.dart';
+import 'package:assets_elerning/payment/payment_service.dart';
 
 class CoursePage extends StatefulWidget {
   final String userEmail;
@@ -105,6 +105,7 @@ class _CoursePageState extends State<CoursePage> {
                           userDocs: userDocs,
                           userEmail: widget.userEmail,
                           userPassword: widget.userPassword,
+                          Docsfield: '',
                         ),
                 ),
               ],
@@ -121,6 +122,7 @@ class FirestoreDataWidget extends StatelessWidget {
   final List<QueryDocumentSnapshot>? userDocs;
   final String userEmail;
   final String userPassword;
+  final String Docsfield;
 
   const FirestoreDataWidget({
     super.key,
@@ -128,7 +130,22 @@ class FirestoreDataWidget extends StatelessWidget {
     required this.userDocs,
     required this.userEmail,
     required this.userPassword,
+    required this.Docsfield,
   });
+
+  Future<String> fetchField(String documentId) async {
+    var docRef =
+        FirebaseFirestore.instance.collection("Course").doc(documentId);
+
+    var docSnapshot = await docRef.get();
+    if (docSnapshot.exists) {
+      var data = docSnapshot.data();
+      if (data != null && data.containsKey('Status')) {
+        return data['Status'];
+      }
+    }
+    return 'StatusNotFound';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,49 +172,56 @@ class FirestoreDataWidget extends StatelessWidget {
             .collection('Course')
             .doc(document.id);
         print(nameDocs);
+
         return GestureDetector(
-          onTap: () {
-            userDocRef.get().then((docSnapshot) {
-              if (docSnapshot.exists) {
-                Map<String, dynamic>? data =
-                    docSnapshot.data() as Map<String, dynamic>?;
-                if (data != null && data.containsKey('Status')) {
-                  var statusValue = data['Status'];
-                  if (statusValue == 'True') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StationPage(
-                          documentId: document.id,
-                          UserEmail: userEmail,
-                          UserPassword: userPassword,
-                        ),
+          onTap: () async {
+            var userDocSnapshot = await userDocRef.get();
+            if (userDocSnapshot.exists) {
+              var userData = userDocSnapshot.data() as Map<String, dynamic>?;
+              if (userData != null && userData.containsKey('Status')) {
+                var statusValue = userData['Status'];
+                var docStatus = await fetchField(document.id);
+                if (statusValue == docStatus) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StationPage(
+                        documentId: document.id,
+                        UserEmail: userEmail,
+                        UserPassword: userPassword,
                       ),
-                    );
-                    print("Document ID : ${document.id}");
-                  } else if (statusValue == 'False') {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const sellPage()));
-                  }
+                    ),
+                  );
+                  print("Document ID : ${document.id}");
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SellPage(
+                        nameCourse: document.id,
+                      ),
+                    ),
+                  );
                 }
-              } else {
-                print('Document does not exist.');
-                userDocRef.set({
-                  // 'Complete ': "0%",
-                  "Status": "False",
-                }).then((_) {
-                  print("Document created successfully!");
-                }).catchError((error) {
-                  print('Error creating document: $error');
-                });
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const sellPage()));
               }
-            }).catchError((error) {
-              print('Error checking document existence: $error');
-            });
+            } else {
+              print('Document does not exist.');
+              await userDocRef.set({
+                "Status": "False",
+              }).then((_) {
+                print("Document created successfully!");
+              }).catchError((error) {
+                print('Error creating document: $error');
+              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SellPage(
+                    nameCourse: document.id,
+                  ),
+                ),
+              );
+            }
           },
           child: Container(
             padding: const EdgeInsets.all(8.0),
@@ -245,4 +269,10 @@ class FirestoreDataWidget extends StatelessWidget {
       },
     );
   }
+}
+
+class Courses {
+  String coursename = '';
+  String docname = '';
+  String amountCourse = '';
 }
