@@ -21,7 +21,7 @@ class CoursePage extends StatefulWidget {
 class _CoursePageState extends State<CoursePage> {
   final TextEditingController _searchController = TextEditingController();
   List<QueryDocumentSnapshot> courseDocs = [];
-  Stream<QuerySnapshot>? _courseStream;
+  StreamSubscription<QuerySnapshot>? _courseStreamSubscription;
   List<QueryDocumentSnapshot>? _allDocs;
   List<QueryDocumentSnapshot>? _filteredDocs;
   List<QueryDocumentSnapshot>? userDocs;
@@ -32,18 +32,21 @@ class _CoursePageState extends State<CoursePage> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _fetchInitialData();
-    fetchCourses(widget.userEmail);
+    _fetchUserCourses(widget.userEmail);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _courseStreamSubscription?.cancel();
     super.dispose();
   }
 
   void _fetchInitialData() {
-    _courseStream = FirebaseFirestore.instance.collection('Course').snapshots();
-    _courseStream!.listen((snapshot) {
+    _courseStreamSubscription = FirebaseFirestore.instance
+        .collection('Course')
+        .snapshots()
+        .listen((snapshot) {
       setState(() {
         _allDocs = snapshot.docs;
         _filteredDocs = _allDocs;
@@ -64,15 +67,22 @@ class _CoursePageState extends State<CoursePage> {
     });
   }
 
-  Future<void> fetchCourses(String userEmail) async {
-    var collectionRef = FirebaseFirestore.instance.collection('User');
-    var querySnapshot =
-        await collectionRef.where('Email', isEqualTo: userEmail).get();
+  Future<void> _fetchUserCourses(String userEmail) async {
+    try {
+      var collectionRef = FirebaseFirestore.instance.collection('User');
+      var querySnapshot =
+          await collectionRef.where('Email', isEqualTo: userEmail).get();
 
-    setState(() {
-      userDocs = querySnapshot.docs;
-      _isLoading = false;
-    });
+      setState(() {
+        userDocs = querySnapshot.docs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching user courses: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -105,7 +115,6 @@ class _CoursePageState extends State<CoursePage> {
                           userDocs: userDocs,
                           userEmail: widget.userEmail,
                           userPassword: widget.userPassword,
-                          Docsfield: '',
                         ),
                 ),
               ],
@@ -122,7 +131,6 @@ class FirestoreDataWidget extends StatelessWidget {
   final List<QueryDocumentSnapshot>? userDocs;
   final String userEmail;
   final String userPassword;
-  final String Docsfield;
 
   const FirestoreDataWidget({
     super.key,
@@ -130,19 +138,43 @@ class FirestoreDataWidget extends StatelessWidget {
     required this.userDocs,
     required this.userEmail,
     required this.userPassword,
-    required this.Docsfield,
   });
 
-  Future<String> fetchField(String documentId) async {
-    var docRef =
-        FirebaseFirestore.instance.collection("Course").doc(documentId);
-
-    var docSnapshot = await docRef.get();
-    if (docSnapshot.exists) {
-      var data = docSnapshot.data();
-      if (data != null && data.containsKey('Status')) {
-        return data['Status'];
+  Future<String> _fetchField(String documentId) async {
+    try {
+      var docRef =
+          FirebaseFirestore.instance.collection("Course").doc(documentId);
+      var docSnapshot = await docRef.get();
+      if (docSnapshot.exists) {
+        var data = docSnapshot.data();
+        if (data != null && data.containsKey('Status')) {
+          return data['Status'];
+        }
       }
+    } catch (e) {
+      print('Error fetching field: $e');
+    }
+    return 'StatusNotFound';
+  }
+
+  Future<String> _fetchGetData(String documentId, List<String> nameDocs) async {
+    try {
+      String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
+      DocumentReference userDocRef = FirebaseFirestore.instance
+          .collection('User')
+          .doc(firstDocId)
+          .collection('Course')
+          .doc(documentId);
+
+      var userDocSnapshot = await userDocRef.get();
+      if (userDocSnapshot.exists) {
+        var data = userDocSnapshot.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('StatusGet')) {
+          return data['StatusGet'];
+        }
+      }
+    } catch (e) {
+      print('Error fetching getData: $e');
     }
     return 'StatusNotFound';
   }
@@ -165,62 +197,89 @@ class FirestoreDataWidget extends StatelessWidget {
         var imageUrl = document['images'];
         var nameDocs = userDocs!.map((doc) => doc.id).toList();
         String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
-        print(firstDocId);
         DocumentReference userDocRef = FirebaseFirestore.instance
             .collection('User')
             .doc(firstDocId)
             .collection('Course')
             .doc(document.id);
-        print(nameDocs);
 
         return GestureDetector(
           onTap: () async {
-            var userDocSnapshot = await userDocRef.get();
-            if (userDocSnapshot.exists) {
-              var userData = userDocSnapshot.data() as Map<String, dynamic>?;
-              if (userData != null && userData.containsKey('Status')) {
-                var statusValue = userData['Status'];
-                var docStatus = await fetchField(document.id);
-                if (statusValue == docStatus) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StationPage(
-                        documentId: document.id,
+            try {
+              var userDocSnapshot = await userDocRef.get();
+              if (userDocSnapshot.exists) {
+                var userData = userDocSnapshot.data() as Map<String, dynamic>?;
+                if (userData != null && userData.containsKey('Status')) {
+                  var statusValue = userData['Status'];
+                  var docStatus = await _fetchField(document.id);
+                  var StatusGet = await _fetchGetData(document.id, nameDocs);
+
+                  if (statusValue == docStatus &&
+                      StatusGet == "Get ${document.id}") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StationPage(
+                          documentId: document.id,
+                          UserEmail: userEmail,
+                          UserPassword: userPassword,
+                        ),
+                      ),
+                    );
+                  } else {
+                    if (docStatus == "False") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SellPage(
+                              UserEmail: userEmail,
+                              UserPassword: userPassword,
+                              nameCourse: document.id,
+                              statusValue: statusValue,
+                              dataStatus: docStatus,
+                              userDoc: firstDocId,
+                              TextButton: "Get Course"),
+                        ),
+                      );
+                    }
+                    if (docStatus == "True") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SellPage(
+                              UserEmail: userEmail,
+                              UserPassword: userPassword,
+                              nameCourse: document.id,
+                              statusValue: statusValue,
+                              dataStatus: docStatus,
+                              userDoc: firstDocId,
+                              TextButton: "Buy Course"),
+                        ),
+                      );
+                    }
+                  }
+                }
+              } else {
+                var docStatus = await _fetchField(document.id);
+                await userDocRef.set({
+                  "Status": "False",
+                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SellPage(
                         UserEmail: userEmail,
                         UserPassword: userPassword,
-                      ),
-                    ),
-                  );
-                  print("Document ID : ${document.id}");
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SellPage(
                         nameCourse: document.id,
-                      ),
-                    ),
-                  );
-                }
-              }
-            } else {
-              print('Document does not exist.');
-              await userDocRef.set({
-                "Status": "False",
-              }).then((_) {
-                print("Document created successfully!");
-              }).catchError((error) {
-                print('Error creating document: $error');
-              });
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SellPage(
-                    nameCourse: document.id,
+                        statusValue: "False",
+                        dataStatus: docStatus,
+                        userDoc: firstDocId,
+                        TextButton: "Buy Course"),
                   ),
-                ),
-              );
+                );
+              }
+            } catch (e) {
+              print('Error on document tap: $e');
             }
           },
           child: Container(
@@ -244,7 +303,6 @@ class FirestoreDataWidget extends StatelessWidget {
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        print('Error loading image: $error');
                         return const Center(
                           child: Text(
                             'Could not load image',
@@ -269,10 +327,4 @@ class FirestoreDataWidget extends StatelessWidget {
       },
     );
   }
-}
-
-class Courses {
-  String coursename = '';
-  String docname = '';
-  String amountCourse = '';
 }

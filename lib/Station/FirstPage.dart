@@ -327,6 +327,7 @@ class _FirstPageState extends State<FirstPage> {
     double totalDocuments = loadingComplete.length.toDouble();
     double percentage = 100 / totalDocuments;
 
+    var docsStatus = await _fetchStatusData(documentId, nameDocs);
     var userDocSnapshot = await userDocRef.get();
     double currentCompleteValue = 0.0;
     if (userDocSnapshot.exists) {
@@ -341,10 +342,11 @@ class _FirstPageState extends State<FirstPage> {
 
     if (newCompleteValue >= 99.99) {
       newCompleteValue = 100;
-      setUpdateComplete(documentId, subcollectionName, newCompleteValue);
+      await setUpdateComplete(
+          docsStatus, documentId, subcollectionName, newCompleteValue);
       await userDocRef.update({
         subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
-        "Status": "True",
+        "Status": docsStatus,
         "Complete $subcollectionName": "Complete Course : $subcollectionName"
       });
     } else {
@@ -356,8 +358,8 @@ class _FirstPageState extends State<FirstPage> {
     return newCompleteValue;
   }
 
-  Future<void> setUpdateComplete(String documentId, String subcollectionName,
-      double newCompleteValue) async {
+  Future<void> setUpdateComplete(String docsStatus, String documentId,
+      String subcollectionName, double newCompleteValue) async {
     var nameDocs = userDocs?.map((doc) => doc.id).toList() ?? [];
     if (nameDocs.isEmpty) {
       print("No user documents found.");
@@ -371,9 +373,32 @@ class _FirstPageState extends State<FirstPage> {
     var docRef = userDocRef.collection("CompleteCourse").doc(documentId);
     await docRef.set({
       subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
-      "Status": "True",
+      "Status": docsStatus,
       "Complete $subcollectionName": "Complete Course : $subcollectionName"
     });
+  }
+
+  Future<String> _fetchStatusData(
+      String documentId, List<String> nameDocs) async {
+    try {
+      String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
+      DocumentReference userDocRef = FirebaseFirestore.instance
+          .collection('User')
+          .doc(firstDocId)
+          .collection('Course')
+          .doc(documentId);
+
+      var userDocSnapshot = await userDocRef.get();
+      if (userDocSnapshot.exists) {
+        var data = userDocSnapshot.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('Status')) {
+          return data['Status'];
+        }
+      }
+    } catch (e) {
+      print('Error fetching getData: $e');
+    }
+    return 'StatusNotFound';
   }
 
   Future<String?> getReturnDocumentID(

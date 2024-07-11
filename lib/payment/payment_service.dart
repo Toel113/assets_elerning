@@ -1,12 +1,29 @@
+import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class SellPage extends StatefulWidget {
   final String nameCourse;
+  final String statusValue;
+  final String dataStatus;
+  final String userDoc;
+  final String UserEmail;
+  final String UserPassword;
+  final String TextButton;
 
-  const SellPage({Key? key, required this.nameCourse}) : super(key: key);
+  const SellPage({
+    Key? key,
+    required this.nameCourse,
+    required this.statusValue,
+    required this.dataStatus,
+    required this.userDoc,
+    required this.UserEmail,
+    required this.UserPassword,
+    required this.TextButton,
+  }) : super(key: key);
 
   @override
   _SellPageState createState() => _SellPageState();
@@ -36,6 +53,17 @@ class _SellPageState extends State<SellPage> {
     var docSnapshot = await docRef.get();
     if (docSnapshot.exists && docSnapshot.data()!.containsKey("Course ID")) {
       return docSnapshot.data()!["Course ID"];
+    } else {
+      return "Course ID not found";
+    }
+  }
+
+  Future<String> getAmount() async {
+    var docRef =
+        FirebaseFirestore.instance.collection("Course").doc(widget.nameCourse);
+    var docSnapshot = await docRef.get();
+    if (docSnapshot.exists && docSnapshot.data()!.containsKey("Amount")) {
+      return docSnapshot.data()!["Amount"];
     } else {
       return "Course ID not found";
     }
@@ -121,16 +149,82 @@ class _SellPageState extends State<SellPage> {
                         ),
                       ],
                     ),
-                    _buildInfoBox("${x} .-", "Amount :"),
+                    Expanded(
+                      child: FutureBuilder<String>(
+                        future: getAmount(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data != "") {
+                            return Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(4.0),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color:
+                                          Color.fromARGB(255, 255, 255, 255)),
+                                  borderRadius: BorderRadius.circular(5.0),
+                                ),
+                                child: QrImageView(
+                                  data: snapshot.data!,
+                                  version: QrVersions.auto,
+                                  size: 250.0,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return SizedBox
+                                .shrink(); // หรือ return Container();
+                          }
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: FutureBuilder<String>(
+                        future: getAmount(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return _buildInfoBox("Loading...", "Amount :");
+                          } else if (snapshot.hasError) {
+                            return _buildInfoBox("Error", "Amount :");
+                          } else {
+                            return _buildInfoBox(
+                                "${snapshot.data!} .-", "Amount :");
+                          }
+                        },
+                      ),
+                    ),
                     SizedBox(height: 30),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () async {},
+                        onPressed: () async {
+                          if (widget.statusValue == widget.dataStatus) {
+                            upDateGetData();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DashboardPage(
+                                    userEmail: widget.UserEmail,
+                                    userPassword: widget.UserPassword,
+                                  ),
+                                ));
+                          } else {
+                            upDateGetData();
+                            // upDateGetTureData();
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DashboardPage(
+                                    userEmail: widget.UserEmail,
+                                    userPassword: widget.UserPassword,
+                                  ),
+                                ));
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(200, 60),
                         ),
                         child: Text(
-                          "Buy Course",
+                          widget.TextButton,
                           style: TextStyle(fontSize: 20),
                         ),
                       ),
@@ -183,5 +277,26 @@ class _SellPageState extends State<SellPage> {
         },
       );
     });
+  }
+
+  Future<void> upDateGetData() async {
+    DocumentReference userDocRef = FirebaseFirestore.instance
+        .collection('User')
+        .doc(widget.userDoc)
+        .collection('Course')
+        .doc(widget.nameCourse);
+
+    userDocRef.update({"StatusGet": "Get ${widget.nameCourse}"});
+  }
+
+  Future<void> upDateGetTureData() async {
+    DocumentReference userDocRef = FirebaseFirestore.instance
+        .collection('User')
+        .doc(widget.userDoc)
+        .collection('Course')
+        .doc(widget.nameCourse);
+
+    userDocRef
+        .update({"Status": "True", "StatusGet": "Get ${widget.nameCourse}"});
   }
 }

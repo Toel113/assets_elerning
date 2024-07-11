@@ -1,3 +1,4 @@
+import 'package:assets_elerning/Certificate/certificate.dart';
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/payment/historypurches.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -195,8 +196,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 //     const MembershipPage()),
                 buildButton(context, 'Purchase History',
                     Historypurches(userEmail: widget.UserEmail)),
-                // buildButton(context, 'Add/Change Credit Card',
-                //     const Add_chang_CreditCard()),
+                buildButton(
+                    context,
+                    'Certificate',
+                    GenerateCertificate(
+                        recipientName: 'Phakeenai Mittraphap',
+                        userEmail : widget.UserEmail,
+                        userPassword : widget.UserPassword)),
                 // buildButton(context, 'Address', const Address()),
                 // buildButton(context, 'Contact', const Contant()),
                 const SizedBox(height: 20),

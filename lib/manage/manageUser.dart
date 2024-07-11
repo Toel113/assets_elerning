@@ -93,23 +93,18 @@ class _ManageUserPageState extends State<ManageUserPage> {
                       child: Container(
                         padding: const EdgeInsets.all(5.0),
                         decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Color.fromARGB(255, 154, 154, 154)),
-                            borderRadius: BorderRadius.circular(10.0)),
+                          border: Border.all(
+                              color: Color.fromARGB(255, 154, 154, 154)),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
                         child: ListTile(
-                          title: Expanded(
-                            flex: 2,
-                            child: NameColumn(
-                              document: document,
-                              getDatashowName: getDatashowName,
-                            ),
+                          title: NameColumn(
+                            document: document,
+                            getDatashowName: getDatashowName,
                           ),
-                          subtitle: Expanded(
-                            flex: 3,
-                            child: CourseDropdownColumn(
-                              document: document,
-                              getDataDropdown: getDataDropdown,
-                            ),
+                          subtitle: CourseDropdownColumn(
+                            document: document,
+                            getDataDropdown: getDataDropdown,
                           ),
                         ),
                       ),
