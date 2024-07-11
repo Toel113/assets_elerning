@@ -53,6 +53,7 @@ dependencies:
   flutter_pdfview: ^1.2.7
   permission_handler: ^11.3.1
   path_provider_android: ^2.2.7
+  open_file: ^3.3.2 
 
 
 

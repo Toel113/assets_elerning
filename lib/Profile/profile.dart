@@ -1,5 +1,5 @@
-import 'package:assets_elerning/Certificate/certificate.dart';
 import 'package:assets_elerning/api/loadImages.dart';
+import 'package:assets_elerning/Certificate/certificatepage.dart';
 import 'package:assets_elerning/payment/historypurches.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -199,10 +199,24 @@ class _ProfilePageState extends State<ProfilePage> {
                 buildButton(
                     context,
                     'Certificate',
-                    GenerateCertificate(
-                        recipientName: 'Phakeenai Mittraphap',
-                        userEmail : widget.UserEmail,
-                        userPassword : widget.UserPassword)),
+                    FutureBuilder<String>(
+                      future: getDatashowName(widget.UserEmail),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return GenerateCertificate(
+                            recipientName: snapshot.data ??
+                                '', // Handle null case if necessary
+                            userEmail: widget.UserEmail,
+                            userPassword: widget.UserPassword,
+                          );
+                        }
+                      },
+                    )),
                 // buildButton(context, 'Address', const Address()),
                 // buildButton(context, 'Contact', const Contant()),
                 const SizedBox(height: 20),
