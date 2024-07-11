@@ -171,12 +171,9 @@ class _GenerateCertificateState extends State<GenerateCertificate> {
                               String tempPath = tempDir.path;
                               File file = File('$tempPath/example.pdf');
                               await file.writeAsBytes(await pdf.save());
-
-                              String url = Uri.dataFromBytes(await file.readAsBytes(),mimeType: 'application/pdf').toString();
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => PdfViewerScreen(file: file,
-                                  fileURL : url),
+                                  builder: (_) => PdfViewerScreen(file: file),
                                 ),
                               );
                             },

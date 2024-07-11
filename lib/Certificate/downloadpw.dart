@@ -4,10 +4,9 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
 class PdfViewerScreen extends StatefulWidget {
-  final File? file; // Update to allow null values
-  final String? fileURL; // Update to allow null values
+  final File file;
 
-  PdfViewerScreen({this.file, this.fileURL});
+  PdfViewerScreen({required this.file});
 
   @override
   _PdfViewerScreenState createState() => _PdfViewerScreenState();
@@ -16,37 +15,22 @@ class PdfViewerScreen extends StatefulWidget {
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
   Future<void> _downloadPDF() async {
     try {
-      String? downloadUrl;
-      if (widget.file != null) {
-        downloadUrl = widget.file!.path;
-      } else if (widget.fileURL != null) {
-        downloadUrl = widget.fileURL!;
-      }
-      if (downloadUrl != null) {
-        print('Downloading PDF from: $downloadUrl');
-        File pdfFile = File(downloadUrl);
-        if (!pdfFile.existsSync()) {
-          throw Exception('File does not exist at path: $downloadUrl');
-        }
-        Directory appDocumentsDirectory =
-            await getApplicationDocumentsDirectory();
-        String destinationPath = '${appDocumentsDirectory.path}/file.pdf';
-        await pdfFile.copy(destinationPath);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('PDF downloaded successfully. ${pdfFile.path}'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        throw Exception('File or URL not provided.');
-      }
-    } catch (e, stackTrace) {
-      print('Error downloading PDF: $e');
-      print(stackTrace);
+      Directory? downloadsDir = await getExternalStorageDirectory();
+      String downloadsPath = downloadsDir!.path;
+      File downloadFile =
+          File('$downloadsPath/${widget.file.path.split('/').last}');
+      await downloadFile.writeAsBytes(await widget.file.readAsBytes());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to download PDF: $e'),
+          content: Text('PDF Downloaded successfully.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      print('Error downloading PDF: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to download PDF.'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -66,7 +50,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         ],
       ),
       body: PDFView(
-        filePath: widget.file?.path ?? '',
+        filePath: widget.file.path,
         enableSwipe: true,
         swipeHorizontal: false,
         autoSpacing: false,
