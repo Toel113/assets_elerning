@@ -53,7 +53,23 @@ class _HistorypurchesState extends State<Historypurches> {
               ),
               SizedBox(height: 20),
               historyDocs.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          Text(
+                            "No purchase history for Course.",
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                    ))
                   : Expanded(
                       child: ListView.builder(
                         itemCount: historyDocs.length,
@@ -62,50 +78,57 @@ class _HistorypurchesState extends State<Historypurches> {
                               historyDocs[index].data() as Map<String, dynamic>;
                           var courseName =
                               data['CourseName'] ?? 'Unknown Course';
-                          var price = data['Price'] ?? 'Unknown Price';
+                          var price = data['Amount'] ?? 'Unknown Price';
                           var courseId = data['Course ID'] ?? 'Unknown ID';
                           var dateTime = data['DateTime'] ?? 'Unknown Date';
+                          var statusCheck = data['StatusCheck'] ?? "";
 
-                          return Column(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color:
-                                            Color.fromARGB(255, 154, 154, 154)),
-                                    borderRadius: BorderRadius.circular(8.0)),
-                                child: ListTile(
-                                  title: Row(
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Color.fromARGB(255, 154, 154, 154)),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: ListTile(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    courseName,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
                                     children: [
                                       Expanded(
-                                        child: Text(
-                                          courseName,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      SizedBox(width: 10),
-                                      Text("Amount: ${price}"),
-                                    ],
-                                  ),
-                                  subtitle: Row(
-                                    children: [
-                                      SizedBox(
-                                        height: 30,
+                                        child: Text("Amount: ${price}"),
                                       ),
                                       Expanded(
                                         child: Text("ID: ${courseId}"),
                                       ),
-                                      SizedBox(width: 10),
-                                      Text("Date Time: ${dateTime}"),
                                     ],
                                   ),
-                                ),
+                                  SizedBox(height: 5),
+                                  Text("Date Time: ${dateTime}"),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  Text(
+                                    "* $statusCheck",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: statusCheck ==
+                                              "Successfully received the course."
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  )
+                                ],
                               ),
-                              SizedBox(
-                                height: 10,
-                              )
-                            ],
+                            ),
                           );
                         },
                       ),

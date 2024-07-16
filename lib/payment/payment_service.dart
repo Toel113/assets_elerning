@@ -4,6 +4,7 @@ import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 
 class SellPage extends StatefulWidget {
   final String nameCourse;
@@ -33,11 +34,14 @@ class _SellPageState extends State<SellPage> {
   late TextEditingController _courseIdController;
   List<QueryDocumentSnapshot>? userDocs;
   bool? newcheck = false;
-  final int x = 210;
+  late DateTime date;
+  late String formattedDate;
 
   @override
   void initState() {
     super.initState();
+    date = DateTime.now();
+    formattedDate = DateFormat('dd-MM-yyyy HH:mm').format(date);
     _courseIdController = TextEditingController();
   }
 
@@ -65,12 +69,15 @@ class _SellPageState extends State<SellPage> {
     if (docSnapshot.exists && docSnapshot.data()!.containsKey("Amount")) {
       return docSnapshot.data()!["Amount"];
     } else {
-      return "Course ID not found";
+      return "Amount not found";
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -104,53 +111,79 @@ class _SellPageState extends State<SellPage> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Container(
+          return SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(10.0),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color.fromARGB(255, 109, 109, 109)),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Payment Service',
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _buildInfoBox(
-                                widget.nameCourse, "Course Name :")),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: FutureBuilder<String>(
-                            future: getCourseId(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return _buildInfoBox(
-                                    "Loading...", "Course ID :");
-                              } else if (snapshot.hasError) {
-                                return _buildInfoBox("Error", "Course ID :");
-                              } else {
-                                return _buildInfoBox(
-                                    snapshot.data!, "Course ID :");
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: FutureBuilder<String>(
+              child: Container(
+                padding: const EdgeInsets.all(10.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color.fromARGB(255, 109, 109, 109)),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Payment Service',
+                        style: TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 30),
+                      isLandscape
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                    child: _buildInfoBox(
+                                        widget.nameCourse, "Course Name :")),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: FutureBuilder<String>(
+                                    future: getCourseId(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return _buildInfoBox(
+                                            "Loading...", "Course ID :");
+                                      } else if (snapshot.hasError) {
+                                        return _buildInfoBox(
+                                            "Error", "Course ID :");
+                                      } else {
+                                        return _buildInfoBox(
+                                            snapshot.data!, "Course ID :");
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                _buildInfoBox(
+                                    widget.nameCourse, "Course Name :"),
+                                SizedBox(height: 10),
+                                FutureBuilder<String>(
+                                  future: getCourseId(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return _buildInfoBox(
+                                          "Loading...", "Course ID :");
+                                    } else if (snapshot.hasError) {
+                                      return _buildInfoBox(
+                                          "Error", "Course ID :");
+                                    } else {
+                                      return _buildInfoBox(
+                                          snapshot.data!, "Course ID :");
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                      SizedBox(height: 20),
+                      FutureBuilder<String>(
                         future: getAmount(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData && snapshot.data != "") {
@@ -166,19 +199,17 @@ class _SellPageState extends State<SellPage> {
                                 child: QrImageView(
                                   data: snapshot.data!,
                                   version: QrVersions.auto,
-                                  size: 250.0,
+                                  size: constraints.maxWidth * 0.6,
                                 ),
                               ),
                             );
                           } else {
-                            return SizedBox
-                                .shrink(); // หรือ return Container();
+                            return SizedBox.shrink();
                           }
                         },
                       ),
-                    ),
-                    Expanded(
-                      child: FutureBuilder<String>(
+                      SizedBox(height: 20),
+                      FutureBuilder<String>(
                         future: getAmount(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
@@ -192,44 +223,43 @@ class _SellPageState extends State<SellPage> {
                           }
                         },
                       ),
-                    ),
-                    SizedBox(height: 30),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (widget.statusValue == widget.dataStatus) {
-                            upDateGetData();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DashboardPage(
-                                    userEmail: widget.UserEmail,
-                                    userPassword: widget.UserPassword,
-                                  ),
-                                ));
-                          } else {
-                            upDateGetData();
-                            // upDateGetTureData();
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DashboardPage(
-                                    userEmail: widget.UserEmail,
-                                    userPassword: widget.UserPassword,
-                                  ),
-                                ));
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(200, 60),
-                        ),
-                        child: Text(
-                          widget.TextButton,
-                          style: TextStyle(fontSize: 20),
+                      SizedBox(height: 30),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (widget.statusValue == widget.dataStatus) {
+                              upDateGetData();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DashboardPage(
+                                      userEmail: widget.UserEmail,
+                                      userPassword: widget.UserPassword,
+                                    ),
+                                  ));
+                            } else {
+                              upDateGetData();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DashboardPage(
+                                      userEmail: widget.UserEmail,
+                                      userPassword: widget.UserPassword,
+                                    ),
+                                  ));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(200, 60),
+                          ),
+                          child: Text(
+                            widget.TextButton,
+                            style: TextStyle(fontSize: 20),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -266,37 +296,42 @@ class _SellPageState extends State<SellPage> {
     );
   }
 
-  Widget buildCheckbox(BuildContext context) {
-    return StatefulBuilder(builder: (context, setState) {
-      return Checkbox(
-        value: newcheck,
-        onChanged: (newbool) {
-          setState(() {
-            newcheck = newbool;
-          });
-        },
-      );
-    });
-  }
-
   Future<void> upDateGetData() async {
-    DocumentReference userDocRef = FirebaseFirestore.instance
+    DocumentReference userGetCourse = FirebaseFirestore.instance
         .collection('User')
         .doc(widget.userDoc)
         .collection('Course')
         .doc(widget.nameCourse);
 
-    userDocRef.update({"StatusGet": "Get ${widget.nameCourse}"});
-  }
-
-  Future<void> upDateGetTureData() async {
-    DocumentReference userDocRef = FirebaseFirestore.instance
+    DocumentReference userGetHistory = FirebaseFirestore.instance
         .collection('User')
         .doc(widget.userDoc)
-        .collection('Course')
+        .collection('History')
         .doc(widget.nameCourse);
 
-    userDocRef
-        .update({"Status": "True", "StatusGet": "Get ${widget.nameCourse}"});
+    String amount = await getAmount();
+    String courseId = await getCourseId();
+    if (amount == "") {
+      userGetHistory.set({
+        "CourseName": widget.nameCourse,
+        "Amount": "-",
+        "Course ID": courseId,
+        "StatusGet": "Get ${widget.nameCourse}",
+        "DateTime": formattedDate,
+        "StatusCheck": "Successfully received the course."
+      });
+    } else {
+      userGetHistory.set({
+        "CourseName": widget.nameCourse,
+        "Amount": amount,
+        "Course ID": courseId,
+        "StatusGet": "Get ${widget.nameCourse}",
+        "DateTime": formattedDate,
+        "StatusCheck": "Waiting for Admin to check status."
+      });
+    }
+
+    userGetCourse.update(
+        {"StatusGet": "Get ${widget.nameCourse}", "DateTime": formattedDate});
   }
 }

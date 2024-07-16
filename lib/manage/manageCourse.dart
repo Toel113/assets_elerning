@@ -31,7 +31,7 @@ class _ManagePageState extends State<ManagePage>
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Center(child: Text('Manage Data')),
+          automaticallyImplyLeading: false,
           bottom: TabBar(
             controller: _tabController,
             tabs: const [

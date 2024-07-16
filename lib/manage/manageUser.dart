@@ -22,7 +22,10 @@ class _ManageUserPageState extends State<ManageUserPage> {
       var collectionRef = FirebaseFirestore.instance.collection('User');
       var querySnapshot = await collectionRef.get();
       setState(() {
-        userDocs = querySnapshot.docs;
+        userDocs = querySnapshot.docs.where((doc) {
+          var data = doc.data() as Map<String, dynamic>?;
+          return data?['Status'] != 'Admin';
+        }).toList();
       });
     } catch (e) {
       print("Error fetching user documents: $e");
@@ -74,7 +77,10 @@ class _ManageUserPageState extends State<ManageUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text('Manage User'))),
+      appBar: AppBar(
+        title: Center(child: Text('Manage User')),
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -301,9 +307,29 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       var dataStatus =
           FirebaseFirestore.instance.collection('User').doc(documentId);
       var userDocRef = dataStatus.collection('Course').doc(selectedValue1!);
-      await userDocRef.update({
-        "Status": selectStatus,
-      });
+      var statusCheck = dataStatus.collection('History').doc(selectedValue1!);
+
+      try {
+        var userDocSnapshot = await userDocRef.get();
+        if (userDocSnapshot.exists) {
+          await userDocRef.update({
+            "Status": selectStatus,
+          });
+        } else {
+          print('User document does not exist');
+        }
+
+        var statusCheckSnapshot = await statusCheck.get();
+        if (statusCheckSnapshot.exists) {
+          await statusCheck.update({
+            "StatusCheck": "Successfully received the course.",
+          });
+        } else {
+          print('History document does not exist');
+        }
+      } catch (e) {
+        print("Error updating document: $e");
+      }
     } else {
       print('Document ID or selectedValue1 is null');
     }
