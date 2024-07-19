@@ -25,19 +25,15 @@ class _AddCoursePageState extends State<AddCoursePage> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<Map<String, String>> stationData = [];
   PlatformFile? pickedFile;
-  String? urlDownload;
-  String? urlVideos;
+  String? urlDownload, urlVideos;
   double imageUploadProgress = 0.0;
   List<double> videoUploadProgress = [];
-
-  List<String> items2 = ["False", "True"];
-  String? selectStatus;
-
-  List<String> items1 = [];
-  String? selectValue;
-
+  List<String> items2 = ["False", "True"], items1 = [];
+  String? selectStatus, selectValue;
+  late List<String> DataCourse = [], DataStation = [];
   final Courses courseData = Courses();
   final _formKey = GlobalKey<FormState>();
+  var rng = RandomNumberGenerator();
 
   @override
   void initState() {
@@ -46,6 +42,8 @@ class _AddCoursePageState extends State<AddCoursePage> {
     videoUploadProgress.add(0.0);
     getDocument();
     fetchDropdownDataStatus();
+    getCourse();
+    getStation();
   }
 
   Future<void> fetchDropdownDataStatus() async {
@@ -56,79 +54,77 @@ class _AddCoursePageState extends State<AddCoursePage> {
     });
   }
 
-  var rng = RandomNumberGenerator();
-
   Future<void> addCourseToFirestore() async {
     try {
-      if (courseData.coursename.isEmpty ||
-          courseData.docname.isEmpty ||
-          stationData.isEmpty) {
-        print('Some fields are empty.');
-        return;
-      }
-      // SelectValue == "newValue"
       if (selectValue == "newValue") {
-        var courseRef =
-            firestore.collection("Course").doc(courseData.coursename);
-        var docSnapshot = await courseRef.get();
+        if (!DataCourse.contains(courseData.coursename)) {
+          if (courseData.coursename.isEmpty ||
+              courseData.docname.isEmpty ||
+              stationData.isEmpty) {
+            print('Some fields are empty.');
+            return;
+          }
 
-        if (docSnapshot.exists) {
-          var data = docSnapshot.data();
-          if (data != null && data.containsKey("Course ID")) {
-            await courseRef.update({
-              "images": urlDownload,
-            });
-            if (data.containsKey("Status") != selectStatus) {
+          var courseRef =
+              firestore.collection("Course").doc(courseData.coursename);
+          var docSnapshot = await courseRef.get();
+
+          if (docSnapshot.exists) {
+            var data = docSnapshot.data();
+            if (data != null && data.containsKey("Course ID")) {
               await courseRef.update({
-                "Status": selectStatus,
                 "images": urlDownload,
               });
+              if (data.containsKey("Status") != selectStatus) {
+                await courseRef.update({
+                  "Status": selectStatus,
+                  "images": urlDownload,
+                });
+              }
             }
+          } else {
+            await courseRef.set({
+              "Amount": courseData.amountCourse,
+              "Status": selectStatus,
+              "Course ID": "00${rng.randomNumber}",
+              "images": urlDownload,
+            });
           }
-        } else {
-          await courseRef.set({
-            "Amount": courseData.amountCourse,
-            "Status": selectStatus,
-            "Course ID": "00${rng.randomNumber}",
-            "images": urlDownload,
-          });
+          if (!DataStation.contains(courseData.docname)) {
+            final nameStationRef =
+                firestore.collection('NameStation').doc(courseData.coursename);
+            var nameStationSnapshot = await nameStationRef.get();
+
+            if (nameStationSnapshot.exists) {
+              await nameStationRef.update({
+                courseData.docname: courseData.docname,
+              });
+              print('Updated document ${courseData.docname} successfully.');
+            } else {
+              await nameStationRef.set({
+                courseData.docname: courseData.docname,
+              });
+              print('Added document ${courseData.docname} successfully.');
+            }
+
+            for (var station in stationData) {
+              await firestore
+                  .collection("Course")
+                  .doc(courseData.coursename)
+                  .collection(courseData.docname)
+                  .doc(station['stationname'])
+                  .set({
+                "stationname": station['stationname'],
+                "videosurl": station['videosurl'],
+              });
+              print(
+                  "Added ${station['stationname']} under ${courseData.docname} successfully.");
+            }
+            print(
+                "Course ${courseData.coursename} with document ${courseData.docname} added successfully.");
+          }
         }
-
-        final nameStationRef =
-            firestore.collection('NameStation').doc(courseData.coursename);
-        var nameStationSnapshot = await nameStationRef.get();
-
-        if (nameStationSnapshot.exists) {
-          await nameStationRef.update({
-            courseData.docname: courseData.docname,
-          });
-          print('Updated document ${courseData.docname} successfully.');
-        } else {
-          await nameStationRef.set({
-            courseData.docname: courseData.docname,
-          });
-          print('Added document ${courseData.docname} successfully.');
-        }
-
-        for (var station in stationData) {
-          await firestore
-              .collection("Course")
-              .doc(courseData.coursename)
-              .collection(courseData.docname)
-              .doc(station['stationname'])
-              .set({
-            "stationname": station['stationname'],
-            "videosurl": station['videosurl'],
-          });
-          print(
-              "Added ${station['stationname']} under ${courseData.docname} successfully.");
-        }
-        print(
-            "Course ${courseData.coursename} with document ${courseData.docname} added successfully.");
-      }
-
-      /// SelectValue != "newValue" or SelectValue == "nameCourse"
-      else {
+      } else {
         final nameStationRef =
             firestore.collection('NameStation').doc(selectValue);
         var nameStationSnapshot = await nameStationRef.get();
@@ -260,9 +256,11 @@ class _AddCoursePageState extends State<AddCoursePage> {
               padding: const EdgeInsets.symmetric(horizontal: 27.0),
               child: TextFormField(
                 controller: stationNameController,
-                decoration: const InputDecoration(
-                  hintText: 'Enter your Station name',
-                  labelText: 'Station Name',
+                decoration: InputDecoration(
+                  labelText: 'Station name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 validator: (value) {
                   if (value!.isEmpty) {
@@ -271,30 +269,24 @@ class _AddCoursePageState extends State<AddCoursePage> {
                   return null;
                 },
                 onSaved: (String? stationname) {
-                  // Save station name to stationData
                   stationData[index]['stationname'] = stationname ?? '';
                 },
               ),
             ),
           ),
           Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      selectVideo(index);
-                    },
-                    child: const Text('Upload Video'),
+            flex: 1,
+            child: Column(
+              children: [
+                IconButton(
+                  onPressed: () => selectVideo(index),
+                  icon: Icon(Icons.video_library),
+                ),
+                if (videoUploadProgress[index] > 0)
+                  LinearProgressIndicator(
+                    value: videoUploadProgress[index],
                   ),
-                  if (videoUploadProgress[index] > 0)
-                    LinearProgressIndicator(
-                      value: videoUploadProgress[index],
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
           Expanded(
@@ -332,6 +324,46 @@ class _AddCoursePageState extends State<AddCoursePage> {
     });
   }
 
+  Future<void> getCourse() async {
+    var docRef = FirebaseFirestore.instance.collection('Course');
+
+    try {
+      var snapshot = await docRef.get();
+      for (var data in snapshot.docs) {
+        DataCourse.add(data.id);
+      }
+    } catch (e) {
+      print("Error getting documents: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>> getStation() async {
+    try {
+      DocumentReference docRef;
+      if (selectValue == "newValue") {
+        docRef = FirebaseFirestore.instance
+            .collection('NameStation')
+            .doc(courseData.coursename);
+      } else {
+        docRef = FirebaseFirestore.instance
+            .collection('NameStation')
+            .doc(selectValue);
+      }
+
+      DocumentSnapshot docSnapshot = await docRef.get();
+
+      if (docSnapshot.exists) {
+        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+        return data;
+      } else {
+        throw Exception("Document does not exist");
+      }
+    } catch (e) {
+      print("Error getting document: $e");
+      throw e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -355,184 +387,143 @@ class _AddCoursePageState extends State<AddCoursePage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10.0),
-                        Container(
-                          child: items1.isEmpty
-                              ? Center(child: Text('No courses found'))
-                              : DropdownMenu<String>(
-                                  initialSelection: selectValue,
-                                  onSelected: (newValue) {
-                                    setState(() {
-                                      selectValue = newValue;
-                                    });
-                                  },
-                                  dropdownMenuEntries: items1.map((document) {
-                                    return DropdownMenuEntry<String>(
-                                      value: document,
-                                      label: document,
-                                    );
-                                  }).toList(),
-                                ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: DropdownButtonFormField<String>(
+                            value: selectValue,
+                            items: items1
+                                .map((item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Text(item),
+                                    ))
+                                .toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectValue = newValue;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Select Course Name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
                         ),
                         if (selectValue == "newValue")
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 27.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child: TextFormField(
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter your Course name',
-                                          labelText: 'Course Name',
-                                        ),
-                                        validator: (value) {
-                                          if (value!.isEmpty) {
-                                            return 'Please enter course name';
-                                          }
-                                          return null;
-                                        },
-                                        onSaved: (String? coursename) {
-                                          courseData.coursename =
-                                              coursename ?? '';
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      flex: 1,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text("Payment"),
-                                          SizedBox(
-                                            height: 3,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(0.0),
-                                            child: Container(
-                                              height: 40,
-                                              child: items2.isEmpty
-                                                  ? const Center(
-                                                      child: Text(
-                                                          'No courses found'))
-                                                  : DropdownButton<String>(
-                                                      value: selectStatus,
-                                                      onChanged: (newValue) {
-                                                        setState(() {
-                                                          selectStatus =
-                                                              newValue!;
-                                                        });
-                                                      },
-                                                      items: items2
-                                                          .map((String value) {
-                                                        return DropdownMenuItem<
-                                                            String>(
-                                                          value: value,
-                                                          child: Text(value),
-                                                        );
-                                                      }).toList(),
-                                                    ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              ElevatedButton(
-                                onPressed: selectFile,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(10.0),
-                                  child: Text(
-                                    'Upload Image',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        if (imageUploadProgress > 0)
-                          LinearProgressIndicator(
-                            value: imageUploadProgress,
-                          ),
-                        const SizedBox(height: 15),
-                        if (selectStatus == "True")
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 27.0),
-                                  child: TextFormField(
-                                    decoration: const InputDecoration(
-                                      hintText: 'Enter your Document name',
-                                      labelText: 'Document Name',
-                                    ),
-                                    validator: (value) {
-                                      if (value!.isEmpty) {
-                                        return 'Please enter document name';
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (String? docname) {
-                                      courseData.docname = docname ?? '';
-                                    },
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 27.0),
-                                  child: TextFormField(
-                                    decoration: const InputDecoration(
-                                      hintText: 'Enter Amount Course',
-                                      labelText: 'Amount Course',
-                                    ),
-                                    validator: (value) {
-                                      if (value!.isEmpty) {
-                                        return 'Please enter Amount Course';
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (String? amountCourse) {
-                                      courseData.amountCourse =
-                                          amountCourse ?? '';
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 27.0),
+                            padding: const EdgeInsets.all(12.0),
+                            child: DropdownButtonFormField<String>(
+                              value: selectStatus,
+                              items: items2
+                                  .map((item) => DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Text(item),
+                                      ))
+                                  .toList(),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectStatus = newValue;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Select Status',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (selectValue == "newValue")
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
                             child: TextFormField(
-                              decoration: const InputDecoration(
-                                hintText: 'Enter your Document name',
-                                labelText: 'Document Name',
+                              onChanged: (value) {
+                                setState(() {
+                                  courseData.coursename = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Course name',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               validator: (value) {
-                                if (value!.isEmpty) {
-                                  return 'Please enter document name';
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a course name';
+                                }
+                                if (DataCourse.contains(
+                                    courseData.coursename)) {
+                                  return 'This Course already exists';
                                 }
                                 return null;
                               },
-                              onSaved: (String? docname) {
-                                courseData.docname = docname ?? '';
+                            ),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: TextFormField(
+                            onChanged: (value) {
+                              setState(() {
+                                courseData.docname = value;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Document name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a document name';
+                              }
+                              if (DataStation.contains(courseData.docname)) {
+                                return 'This Station Already exists';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        if (selectStatus == "True")
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: TextFormField(
+                              onChanged: (value) {
+                                setState(() {
+                                  courseData.amountCourse = value;
+                                });
                               },
+                              decoration: InputDecoration(
+                                labelText: 'Amount of courses',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter the amount of courses';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        if (selectValue == "newValue")
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: selectFile,
+                                  icon: Icon(Icons.attach_file),
+                                  label: Text('Upload Image'),
+                                ),
+                                if (imageUploadProgress > 0)
+                                  LinearProgressIndicator(
+                                    value: imageUploadProgress,
+                                  ),
+                              ],
                             ),
                           ),
                         const SizedBox(height: 10),
@@ -556,23 +547,21 @@ class _AddCoursePageState extends State<AddCoursePage> {
                           child: const Text('Add Row'),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              _formKey.currentState?.save();
-                              addCourseToFirestore();
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.fromLTRB(
-                                60.0, 30.0, 60.0, 30.0),
-                          ),
-                          child: const Text(
-                            'Add Course',
-                            style: TextStyle(
-                              fontSize: 25.0,
-                              color: Color.fromARGB(255, 31, 31, 31),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                _formKey.currentState?.save();
+                                addCourseToFirestore();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.fromLTRB(
+                                  60.0, 20.0, 60.0, 20.0),
                             ),
+                            icon: Icon(Icons.save),
+                            label: Text('Save'),
                           ),
                         ),
                         const SizedBox(height: 20),

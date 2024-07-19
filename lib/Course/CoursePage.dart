@@ -260,23 +260,60 @@ class FirestoreDataWidget extends StatelessWidget {
                   }
                 }
               } else {
-                var docStatus = await _fetchField(document.id);
                 await userDocRef.set({
                   "Status": "False",
                 });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SellPage(
-                        UserEmail: userEmail,
-                        UserPassword: userPassword,
-                        nameCourse: document.id,
-                        statusValue: "False",
-                        dataStatus: docStatus,
-                        userDoc: firstDocId,
-                        TextButton: "Buy Course"),
-                  ),
-                );
+                var userData = userDocSnapshot.data() as Map<String, dynamic>?;
+                if (userData != null && userData.containsKey('Status')) {
+                  var statusValue = userData['Status'];
+                  var docStatus = await _fetchField(document.id);
+                  var StatusGet = await _fetchGetData(document.id, nameDocs);
+
+                  if (statusValue == docStatus &&
+                      StatusGet == "Get ${document.id}") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StationPage(
+                          documentId: document.id,
+                          UserEmail: userEmail,
+                          UserPassword: userPassword,
+                        ),
+                      ),
+                    );
+                  } else {
+                    if (docStatus == "False") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SellPage(
+                              UserEmail: userEmail,
+                              UserPassword: userPassword,
+                              nameCourse: document.id,
+                              statusValue: statusValue,
+                              dataStatus: docStatus,
+                              userDoc: firstDocId,
+                              TextButton: "Get Course"),
+                        ),
+                      );
+                    }
+                    if (docStatus == "True") {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SellPage(
+                              UserEmail: userEmail,
+                              UserPassword: userPassword,
+                              nameCourse: document.id,
+                              statusValue: statusValue,
+                              dataStatus: docStatus,
+                              userDoc: firstDocId,
+                              TextButton: "Buy Course"),
+                        ),
+                      );
+                    }
+                  }
+                }
               }
             } catch (e) {
               print('Error on document tap: $e');

@@ -169,6 +169,8 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
         dropdownItems = data;
         if (dropdownItems.isNotEmpty) {
           selectedValue = dropdownItems[0];
+        } else {
+          selectedValue = null;
         }
       });
     } catch (e) {
@@ -219,6 +221,8 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
       await batch.commit();
 
       print('Deleted all courses in subcollection: $selectedValue');
+
+      // อัปเดตค่า dropdownItems หลังการลบ
       await fetchDropdownData();
 
       setState(() {

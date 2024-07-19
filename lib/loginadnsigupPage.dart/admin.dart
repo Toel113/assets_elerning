@@ -1,0 +1,259 @@
+import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
+import 'package:assets_elerning/model/User.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:form_field_validator/form_field_validator.dart';
+
+class adminRegisPage extends StatefulWidget {
+  @override
+  _adminRegisPageState createState() => _adminRegisPageState();
+}
+
+class _adminRegisPageState extends State<adminRegisPage> {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  bool? newcheck = false;
+  final formkey = GlobalKey<FormState>();
+  final Users profile = Users();
+
+  Future<void> AddUsertofirestore() async {
+    try {
+      await firestore.collection("Admin").doc().set({
+        "Email": profile.email,
+        "Password": profile.password,
+        "Status": "Admin"
+      });
+
+      print("Add Data Success ${profile.email}, ${profile.password}");
+    } catch (e) {
+      print("Error Add data fail $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          width: screenWidth * 0.8,
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Color.fromARGB(255, 119, 119, 119)),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Form(
+            key: formkey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontSize: 70,
+                    color: Color.fromARGB(255, 29, 29, 29),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                buildTextFormField(
+                  hintText: 'Enter your Email',
+                  labelText: 'Email',
+                  onSaved: (String? email) {
+                    profile.email = email!;
+                  },
+                  keyboardType: TextInputType.emailAddress,
+                  validator: MultiValidator([
+                    RequiredValidator(errorText: "Please Enter your Email"),
+                    EmailValidator(errorText: "Enter a valid email address")
+                  ]).call,
+                ),
+                const SizedBox(height: 10.0),
+                buildTextFormField(
+                  hintText: 'Enter your Password',
+                  labelText: 'Password',
+                  onSaved: (String? password) {
+                    profile.password = password!;
+                  },
+                  obscureText: true,
+                  validator: MultiValidator([
+                    RequiredValidator(errorText: "Please Enter your Password"),
+                    MinLengthValidator(6,
+                        errorText: "Password must be at least 6 digits long")
+                  ]).call,
+                ),
+                const SizedBox(height: 10.0),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          buildCheckbox(context),
+                          const SizedBox(width: 5.0),
+                          const Expanded(
+                            child: Text(
+                              'Confirm registration.',
+                              style: TextStyle(
+                                  fontSize: 14.0, color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+                const SizedBox(height: 20.0),
+                buildButton(context),
+                const SizedBox(height: 10.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Already have an account?',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Color.fromARGB(255, 31, 31, 31),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()));
+                      },
+                      child: const Text(
+                        'Log in',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 31, 31, 31),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () async {
+        if (newcheck == true) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Confirmation"),
+                content: const Text("Are you sure you want to sign up?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      if (formkey.currentState!.validate()) {
+                        formkey.currentState?.save();
+                        // Check if email already exists
+                        try {
+                          var methods = await FirebaseAuth.instance
+                              .fetchSignInMethodsForEmail(profile.email);
+                          if (methods.isNotEmpty) {
+                            Fluttertoast.showToast(
+                                msg: "Email is already in use",
+                                gravity: ToastGravity.CENTER);
+                            return;
+                          }
+                          // Email is not in use, proceed with registration
+                          await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                            email: profile.email,
+                            password: profile.password,
+                          );
+                          await AddUsertofirestore();
+                          Fluttertoast.showToast(
+                              msg: "Sign Up Successful",
+                              gravity: ToastGravity.CENTER);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()),
+                          );
+                        } on FirebaseAuthException catch (e) {
+                          Fluttertoast.showToast(
+                              msg: e.message ?? "",
+                              gravity: ToastGravity.CENTER);
+                        }
+                      }
+                    },
+                    child: const Text("OK"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.fromLTRB(60.0, 30.0, 60.0, 30.0),
+      ),
+      child: const Text(
+        'Sign Up',
+        style: TextStyle(
+          fontSize: 25.0,
+          color: Color.fromARGB(255, 31, 31, 31),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTextFormField({
+    required String hintText,
+    required String labelText,
+    required FormFieldSetter<String> onSaved,
+    required String? Function(String?) validator,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 27.0),
+      child: TextFormField(
+        decoration: InputDecoration(
+          hintText: hintText,
+          labelText: labelText,
+        ),
+        onSaved: onSaved,
+        validator: validator,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+      ),
+    );
+  }
+
+  Widget buildCheckbox(BuildContext context) {
+    return StatefulBuilder(builder: (context, setState) {
+      return Checkbox(
+        value: newcheck,
+        onChanged: (newbool) {
+          setState(() {
+            newcheck = newbool;
+          });
+        },
+      );
+    });
+  }
+}

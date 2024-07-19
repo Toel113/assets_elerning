@@ -9,4 +9,6 @@ class Courses {
       this.docname = "",
       this.stationname = "",
       this.videosurl = ""});
+
+  get amountCourse => null;
 }

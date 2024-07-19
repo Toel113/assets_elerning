@@ -307,11 +307,17 @@ class _FirstPageState extends State<FirstPage> {
         FirebaseFirestore.instance.collection('Course').doc(documentId);
     var subcollection = await docRef.collection(subcollectionName).get();
 
+    var loadingStation = await FirebaseFirestore.instance
+        .collection('NameStation')
+        .doc(documentId)
+        .get();
+
     for (var doc in subcollection.docs) {
       loadingComplete.add(doc.id);
     }
 
-    var nameDocs = userDocs?.map((doc) => doc.id).toList() ?? [];
+    var userDocs = await FirebaseFirestore.instance.collection('User').get();
+    var nameDocs = userDocs.docs.map((doc) => doc.id).toList();
     if (nameDocs.isEmpty) {
       print("No user documents found.");
       return null;
@@ -325,35 +331,52 @@ class _FirstPageState extends State<FirstPage> {
         .doc(documentId);
 
     double totalDocuments = loadingComplete.length.toDouble();
-    double percentage = 100 / totalDocuments;
+    double percentageStation = 100 / totalDocuments;
 
-    var docsStatus = await _fetchStatusData(documentId, nameDocs);
+    double totalStation = loadingStation.data()?.length.toDouble() ?? 0;
+    double percentageCourse = 100 / totalStation;
+
     var userDocSnapshot = await userDocRef.get();
     double currentCompleteValue = 0.0;
+    double currentCompleteCourse = 0.0;
     if (userDocSnapshot.exists) {
       var data = userDocSnapshot.data() as Map<String, dynamic>;
       if (data.containsKey(subcollectionName)) {
         currentCompleteValue =
             double.parse(data[subcollectionName].replaceAll("%", ""));
       }
+      if (data.containsKey("Complete $documentId")) {
+        currentCompleteCourse =
+            double.parse(data["Complete $documentId"].replaceAll("%", ""));
+      }
     }
 
-    double newCompleteValue = currentCompleteValue + percentage;
+    double newCompleteValue = currentCompleteValue + percentageStation;
+    double newCompleteCourse = currentCompleteCourse + percentageCourse;
+
+    if (newCompleteCourse > 100) {
+      newCompleteCourse = 100;
+    }
+
+    Map<String, dynamic> updateData = {
+      subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
+    };
 
     if (newCompleteValue >= 99.99) {
       newCompleteValue = 100;
-      await setUpdateComplete(
-          docsStatus, documentId, subcollectionName, newCompleteValue);
-      await userDocRef.update({
-        subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
-        "Status": docsStatus,
-        "Complete $subcollectionName": "Complete Course : $subcollectionName"
-      });
-    } else {
-      await userDocRef.update({
-        subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
-      });
+      updateData[subcollectionName] = "${newCompleteValue.toStringAsFixed(2)}%";
+      updateData["Complete $subcollectionName"] =
+          "Complete : $subcollectionName";
+      updateData["Complete $documentId"] =
+          "${newCompleteCourse.toStringAsFixed(2)}%";
+
+      if (newCompleteCourse == 100) {
+        await setUpdateComplete("Complete : $documentId", documentId,
+            subcollectionName, newCompleteValue);
+      }
     }
+
+    await userDocRef.update(updateData);
 
     return newCompleteValue;
   }

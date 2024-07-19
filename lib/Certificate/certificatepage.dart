@@ -99,7 +99,8 @@ class _GenerateCertificateState extends State<GenerateCertificate> {
                               return Text('Error: ${snapshot.error}');
                             } else if (!snapshot.hasData ||
                                 snapshot.data!.isEmpty) {
-                              return Text('No completed courses found.');
+                              return Center(
+                                  child: Text('No completed courses found.'));
                             } else {
                               var courses = snapshot.data!;
                               return Column(
