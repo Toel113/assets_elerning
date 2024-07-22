@@ -1,12 +1,17 @@
 import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:assets_elerning/api/loadImages.dart';
+import 'package:assets_elerning/loginadnsigupPage.dart/forget_pass.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/singup.dart';
-import 'package:assets_elerning/manage/mainmanage.dart';
+import 'package:assets_elerning/manage/Mainmanage.dart';
 import 'package:assets_elerning/model/User.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:screen_protector/screen_protector.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,36 +22,76 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool? newcheck = false;
+  TextEditingController Email = TextEditingController();
+  TextEditingController pass = TextEditingController();
+  bool ischeck = false;
   final formkey = GlobalKey<FormState>();
-  final Users profile = Users();
+  final profile = Users();
   bool _isObscure = true;
+  late Box? box1;
 
+  @override
+  @override
   void initState() {
     super.initState();
-    _enableScreenProtector();
+    createBox();
   }
 
-  // @override
-  // void dispose() {
-  //   _disableScreenProtector();
-  //   super.dispose();
-  // }
+  void dispose() {
+    _disableScreenProtector();
+    Email.dispose();
+    pass.dispose();
+    super.dispose();
+  }
+
+  Future<void> createBox() async {
+    box1 = await Hive.openBox('logindata');
+    getdata();
+  }
+
+  void getdata() {
+    if (box1 != null && box1!.isOpen) {
+      if (box1!.get('email') != null) {
+        Email.text = box1!.get("email");
+        print("Get Email Succeses");
+      }
+      if (box1!.get('pass') != null) {
+        pass.text = box1!.get("pass");
+        print("Get Password Succeses");
+      }
+    }
+
+    setState(() {
+      ischeck = true;
+    });
+  }
+
+  Future<void> login() async {
+    if (box1 != null && box1!.isOpen) {
+      if (ischeck) {
+        await box1!.put("email", Email.text);
+        await box1!.put("pass", pass.text);
+        print("Set Data ${Email.text} and ${pass.text} Success");
+      }
+    } else {
+      print("Box not found or not open");
+    }
+  }
 
   Future<void> _enableScreenProtector() async {
     await ScreenProtector.preventScreenshotOn();
   }
 
-  // Future<void> _disableScreenProtector() async {
-  //   await ScreenProtector.preventScreenshotOff();
-  // }
+  Future<void> _disableScreenProtector() async {
+    await ScreenProtector.preventScreenshotOff();
+  }
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         title: GestureDetector(
           onTap: () {
@@ -107,6 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: TextFormField(
+                        controller: Email,
                         decoration: const InputDecoration(
                           hintText: 'Enter your Email',
                           labelText: 'Email',
@@ -119,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                               errorText: "Please Enter your Email"),
                           EmailValidator(
                               errorText: "Email format is incorrect.")
-                        ]).call,
+                        ]),
                         keyboardType: TextInputType.emailAddress,
                       ),
                     ),
@@ -130,6 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                         alignment: Alignment.centerRight,
                         children: [
                           TextFormField(
+                            controller: pass,
                             obscureText: _isObscure,
                             decoration: const InputDecoration(
                               hintText: 'Enter your Password',
@@ -179,11 +226,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (context) => Repassword()),
-                              // );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PhoneAuth()),
+                              );
                             },
                             child: const Text(
                               'Forgot password?',
@@ -202,22 +249,34 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         if (formkey.currentState!.validate()) {
                           formkey.currentState?.save();
+                          await login();
                           try {
                             await FirebaseAuth.instance
                                 .signInWithEmailAndPassword(
                               email: profile.email,
                               password: profile.password,
                             )
-                                .then((value) {
+                                .then((value) async {
                               formkey.currentState?.reset();
-                              if (profile.email == "Admin123@gmail.com") {
+                              final adminSnapshot = await FirebaseFirestore
+                                  .instance
+                                  .collection('Admin')
+                                  .where('Email', isEqualTo: profile.email)
+                                  .get();
+                              final userSnapshot = await FirebaseFirestore
+                                  .instance
+                                  .collection('User')
+                                  .where('Email', isEqualTo: profile.email)
+                                  .get();
+
+                              if (adminSnapshot.docs.isNotEmpty) {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => MainmanagePage(),
                                   ),
                                 );
-                              } else {
+                              } else if (userSnapshot.docs.isNotEmpty) {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
@@ -227,11 +286,29 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                                 );
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg: "Email or Password incorrect",
+                                  gravity: ToastGravity.CENTER,
+                                );
                               }
                             });
-                          } on FirebaseAuthException catch (_) {
+                          } on FirebaseAuthException catch (e) {
+                            String errorMessage = "An error occurred";
+                            if (e.code == 'user-not-found') {
+                              errorMessage = 'No user found for that email.';
+                            } else if (e.code == 'wrong-password') {
+                              errorMessage =
+                                  'Wrong password provided for that user.';
+                            }
                             Fluttertoast.showToast(
-                              msg: "Email or Password incorrect",
+                              msg: errorMessage,
+                              gravity: ToastGravity.CENTER,
+                            );
+                          } catch (e) {
+                            print('Error: $e');
+                            Fluttertoast.showToast(
+                              msg: "An error occurred",
                               gravity: ToastGravity.CENTER,
                             );
                           }
@@ -266,7 +343,8 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const SignUpPage()),
+                                builder: (context) => const SignUpPage(),
+                              ),
                             );
                           },
                           child: const Text(
@@ -293,10 +371,10 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildCheckbox() {
     return StatefulBuilder(builder: (context, setState) {
       return Checkbox(
-        value: newcheck,
+        value: ischeck,
         onChanged: (newbool) {
           setState(() {
-            newcheck = newbool;
+            ischeck = newbool!;
           });
         },
       );
