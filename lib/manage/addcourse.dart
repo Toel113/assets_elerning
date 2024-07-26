@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -171,14 +172,13 @@ class _AddCoursePageState extends State<AddCoursePage> {
         return;
       }
 
-      setState(() {
-        pickedFile = result.files.first;
-        print(pickedFile!.name);
-      });
+      final pickedFile = result.files.first;
+      print(pickedFile.name);
 
-      if (pickedFile != null && pickedFile!.bytes != null) {
-        final bytes = pickedFile!.bytes!;
-        final fileName = pickedFile!.name;
+      if (pickedFile.bytes != null) {
+        // หาก bytes มีค่า
+        final bytes = pickedFile.bytes!;
+        final fileName = pickedFile.name;
         final metadata = SettableMetadata(contentType: "image/jpeg");
         final ref = FirebaseStorage.instance.ref().child('files/$fileName');
         final uploadTask = ref.putData(bytes, metadata);
@@ -191,13 +191,46 @@ class _AddCoursePageState extends State<AddCoursePage> {
         });
 
         await uploadTask.whenComplete(() async {
-          final urlDownload = await ref.getDownloadURL();
-          setState(() {
-            this.urlDownload = urlDownload;
-            imageUploadProgress = 0.0;
-          });
-          print('Download URL: $urlDownload');
+          try {
+            final urlDownload = await ref.getDownloadURL();
+            setState(() {
+              this.urlDownload = urlDownload;
+              imageUploadProgress = 0.0;
+            });
+            print('Download URL: $urlDownload');
+          } catch (e) {
+            print('Error getting download URL: $e');
+          }
         });
+      } else if (pickedFile.path != null) {
+        // หาก bytes เป็นค่าว่าง แต่ path มีค่า
+        final file = File(pickedFile.path!);
+        final fileName = pickedFile.name;
+        final metadata = SettableMetadata(contentType: "image/jpeg");
+        final ref = FirebaseStorage.instance.ref().child('files/$fileName');
+        final uploadTask = ref.putFile(file, metadata);
+
+        uploadTask.snapshotEvents.listen((taskSnapshot) {
+          setState(() {
+            imageUploadProgress = (taskSnapshot.bytesTransferred.toDouble() /
+                taskSnapshot.totalBytes.toDouble());
+          });
+        });
+
+        await uploadTask.whenComplete(() async {
+          try {
+            final urlDownload = await ref.getDownloadURL();
+            setState(() {
+              this.urlDownload = urlDownload;
+              imageUploadProgress = 0.0;
+            });
+            print('Download URL: $urlDownload');
+          } catch (e) {
+            print('Error getting download URL: $e');
+          }
+        });
+      } else {
+        print('File bytes and path are null');
       }
     } catch (e) {
       print('Error uploading file: $e');
@@ -206,18 +239,35 @@ class _AddCoursePageState extends State<AddCoursePage> {
 
   Future<void> selectVideo(int index) async {
     try {
-      final result = await FilePicker.platform.pickFiles();
+      final result = await FilePicker.platform.pickFiles(type: FileType.video);
       if (result == null || result.files.isEmpty) {
         print('No file selected');
         return;
       }
 
       final pickedFile = result.files.first;
-      final bytes = pickedFile.bytes!;
+
+      final bytes = pickedFile.bytes;
+      final path = pickedFile.path;
+      if (bytes == null && path == null) {
+        print('Error: both bytes and path are null');
+        return;
+      }
+
       final fileName = pickedFile.name;
       final metadata = SettableMetadata(contentType: "video/mp4");
       final ref = FirebaseStorage.instance.ref().child('Videos/$fileName');
-      final uploadTask = ref.putData(bytes, metadata);
+
+      UploadTask uploadTask;
+      if (bytes != null) {
+        uploadTask = ref.putData(bytes, metadata);
+      } else if (path != null) {
+        final file = File(path);
+        uploadTask = ref.putFile(file, metadata);
+      } else {
+        print('Error: unable to upload file');
+        return;
+      }
 
       uploadTask.snapshotEvents.listen((taskSnapshot) {
         setState(() {
@@ -231,7 +281,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
         final urlVideos = await ref.getDownloadURL();
         setState(() {
           stationData[index]['videosurl'] =
-              urlVideos; // Save videos URL to stationData
+              urlVideos; // บันทึก URL ของวิดีโอไปยัง stationData
           videoUploadProgress[index] = 0.0;
         });
         print('Download URL: $urlVideos');
