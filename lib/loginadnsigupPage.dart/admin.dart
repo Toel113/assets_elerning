@@ -53,7 +53,6 @@ class _adminRegisPageState extends State<adminRegisPage> {
                   'Sign Up',
                   style: TextStyle(
                     fontSize: 70,
-                    color: Color.fromARGB(255, 29, 29, 29),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -96,8 +95,6 @@ class _adminRegisPageState extends State<adminRegisPage> {
                           const Expanded(
                             child: Text(
                               'Confirm registration.',
-                              style: TextStyle(
-                                  fontSize: 14.0, color: Colors.black),
                             ),
                           ),
                         ],
@@ -116,7 +113,7 @@ class _adminRegisPageState extends State<adminRegisPage> {
                       'Already have an account?',
                       style: TextStyle(
                         fontSize: 16.0,
-                        color: Color.fromARGB(255, 31, 31, 31),
+                        
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -132,7 +129,7 @@ class _adminRegisPageState extends State<adminRegisPage> {
                         style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 31, 31, 31),
+                         
                         ),
                       ),
                     )
@@ -215,7 +212,7 @@ class _adminRegisPageState extends State<adminRegisPage> {
         'Sign Up',
         style: TextStyle(
           fontSize: 25.0,
-          color: Color.fromARGB(255, 31, 31, 31),
+         
         ),
       ),
     );

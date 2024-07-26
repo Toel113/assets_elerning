@@ -23,7 +23,6 @@ class _MainmanagePageState extends State<MainmanagePage> {
     return Scaffold(
       appBar: myIndex != 2
           ? AppBar(
-              backgroundColor: Color.fromARGB(255, 255, 255, 255),
               automaticallyImplyLeading: false,
               title: GestureDetector(
                 onTap: () {
@@ -59,7 +58,7 @@ class _MainmanagePageState extends State<MainmanagePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: myIndex,
         selectedItemColor: const Color.fromARGB(255, 24, 24, 24),
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Theme.of(context).colorScheme.secondary,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         onTap: (index) {
@@ -72,7 +71,8 @@ class _MainmanagePageState extends State<MainmanagePage> {
             setState(() {
               myIndex = index;
               if (index == 1) {
-                _children[1] = ManageUserPage(key: UniqueKey()); // Update the key
+                _children[1] =
+                    ManageUserPage(key: UniqueKey()); // Update the key
               }
             });
           }

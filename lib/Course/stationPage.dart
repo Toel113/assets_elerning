@@ -7,13 +7,11 @@ import 'package:assets_elerning/Station/FirstPage.dart';
 class StationPage extends StatefulWidget {
   final String documentId;
   final String UserEmail;
-  final String UserPassword;
 
   const StationPage({
     Key? key,
     required this.documentId,
     required this.UserEmail,
-    required this.UserPassword,
   }) : super(key: key);
 
   @override
@@ -51,7 +49,6 @@ class _StationPageState extends State<StationPage> {
               MaterialPageRoute(
                 builder: (context) => DashboardPage(
                   userEmail: widget.UserEmail,
-                  userPassword: widget.UserPassword,
                 ),
               ),
             );
@@ -87,7 +84,6 @@ class _StationPageState extends State<StationPage> {
                     userDocs: userDocs,
                     documentId: widget.documentId,
                     userEmail: widget.UserEmail,
-                    userPassword: widget.UserPassword,
                   ),
                 ),
               ),
@@ -103,14 +99,12 @@ class FirestoreDataWidget extends StatelessWidget {
   final List<QueryDocumentSnapshot>? userDocs;
   final String documentId;
   final String userEmail;
-  final String userPassword;
 
   const FirestoreDataWidget({
     Key? key,
     required this.userDocs,
     required this.documentId,
     required this.userEmail,
-    required this.userPassword,
   }) : super(key: key);
 
   @override
@@ -137,7 +131,6 @@ class FirestoreDataWidget extends StatelessWidget {
               documentId: documentId,
               subcollectionName: subcollectionName,
               userEmail: userEmail,
-              userPassword: userPassword,
             );
           },
         );
@@ -186,14 +179,12 @@ class SubcollectionDropdown extends StatefulWidget {
   final String documentId;
   final String subcollectionName;
   final String userEmail;
-  final String userPassword;
 
   const SubcollectionDropdown({
     Key? key,
     required this.documentId,
     required this.subcollectionName,
     required this.userEmail,
-    required this.userPassword,
   }) : super(key: key);
 
   @override
@@ -225,9 +216,9 @@ class _SubcollectionDropdownState extends State<SubcollectionDropdown> {
           margin: EdgeInsets.symmetric(vertical: 10.0),
           padding: EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+              border: Border.all(color: Theme.of(context).colorScheme.primary),
+              borderRadius: BorderRadius.circular(8.0),
+              color: Theme.of(context).colorScheme.secondary),
           child: DropdownButton<String>(
             isExpanded: true,
             hint: Padding(
@@ -254,7 +245,6 @@ class _SubcollectionDropdownState extends State<SubcollectionDropdown> {
                       documentName: newValue,
                       subcollectionName: widget.subcollectionName,
                       UserEmail: widget.userEmail,
-                      UserPassword: widget.userPassword,
                     ),
                   ),
                 );

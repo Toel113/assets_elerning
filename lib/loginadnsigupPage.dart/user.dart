@@ -19,7 +19,7 @@ class _userRegisPageState extends State<userRegisPageState> {
 
   Future<void> AddUsertofirestore() async {
     try {
-      await firestore.collection("User").doc(profile.fullname).set({
+      await firestore.collection("User").doc().set({
         "Fullname": profile.fullname,
         "Email": profile.email,
         "Password": profile.password,
@@ -54,7 +54,7 @@ class _userRegisPageState extends State<userRegisPageState> {
                   'Sign Up',
                   style: TextStyle(
                     fontSize: 70,
-                    color: Color.fromARGB(255, 29, 29, 29),
+                   
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -119,8 +119,7 @@ class _userRegisPageState extends State<userRegisPageState> {
                           const Expanded(
                             child: Text(
                               'Confirm registration.',
-                              style: TextStyle(
-                                  fontSize: 14.0, color: Colors.black),
+                              
                             ),
                           ),
                         ],
@@ -139,7 +138,7 @@ class _userRegisPageState extends State<userRegisPageState> {
                       'Already have an account?',
                       style: TextStyle(
                         fontSize: 16.0,
-                        color: Color.fromARGB(255, 31, 31, 31),
+                    
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -155,7 +154,7 @@ class _userRegisPageState extends State<userRegisPageState> {
                         style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 31, 31, 31),
+                          
                         ),
                       ),
                     )
@@ -171,7 +170,7 @@ class _userRegisPageState extends State<userRegisPageState> {
 
   Widget buildButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
         if (newcheck == true) {
           showDialog(
             context: context,
@@ -187,27 +186,43 @@ class _userRegisPageState extends State<userRegisPageState> {
                     child: const Text("Cancel"),
                   ),
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.of(context).pop();
                       if (formkey.currentState!.validate()) {
                         formkey.currentState?.save();
-                        AddUsertofirestore();
+
+                        // Check if email is already in use
+                        bool emailInUse =
+                            await isEmailAlreadyInUse(profile.email);
+                        if (emailInUse) {
+                          Fluttertoast.showToast(
+                              msg: "Email already in use",
+                              gravity: ToastGravity.CENTER);
+                          return;
+                        }
+
+                        // Add user to Firestore
+                        await AddUsertofirestore();
+
                         try {
-                          FirebaseAuth.instance.createUserWithEmailAndPassword(
-                              email: profile.email, password: profile.password);
+                          await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                                  email: profile.email,
+                                  password: profile.password);
                           Fluttertoast.showToast(
                               msg: "Sign Up Successful",
                               gravity: ToastGravity.CENTER);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginPage()),
+                          );
                         } on FirebaseAuthException catch (e) {
                           Fluttertoast.showToast(
                               msg: e.message ?? "",
                               gravity: ToastGravity.CENTER);
                         }
                       }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
                     },
                     child: const Text("OK"),
                   ),
@@ -224,7 +239,7 @@ class _userRegisPageState extends State<userRegisPageState> {
         'Sign Up',
         style: TextStyle(
           fontSize: 25.0,
-          color: Color.fromARGB(255, 31, 31, 31),
+        
         ),
       ),
     );
@@ -264,5 +279,17 @@ class _userRegisPageState extends State<userRegisPageState> {
         },
       );
     });
+  }
+
+  Future<bool> isEmailAlreadyInUse(String email) async {
+    try {
+      // ignore: deprecated_member_use
+      final signInMethods =
+          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      return signInMethods.isNotEmpty;
+    } catch (e) {
+      print("Error checking email existence: $e");
+      return false;
+    }
   }
 }

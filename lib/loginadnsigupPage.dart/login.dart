@@ -1,17 +1,20 @@
 import 'package:assets_elerning/Course/dashboard.dart';
+import 'package:assets_elerning/RegisEmail/userEmail.dart';
 import 'package:assets_elerning/api/loadImages.dart';
-import 'package:assets_elerning/loginadnsigupPage.dart/forget_pass.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/singup.dart';
 import 'package:assets_elerning/manage/Mainmanage.dart';
 import 'package:assets_elerning/model/User.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:assets_elerning/otp_verification/forget_pass.dart';
+import 'package:assets_elerning/theme/theme.dart';
+import 'package:assets_elerning/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:screen_protector/screen_protector.dart';
 
 class LoginPage extends StatefulWidget {
@@ -28,15 +31,15 @@ class _LoginPageState extends State<LoginPage> {
   final formkey = GlobalKey<FormState>();
   final profile = Users();
   bool _isObscure = true;
-  late Box? box1;
+  Box? box1;
 
-  @override
   @override
   void initState() {
     super.initState();
     createBox();
   }
 
+  @override
   void dispose() {
     _disableScreenProtector();
     Email.dispose();
@@ -53,17 +56,35 @@ class _LoginPageState extends State<LoginPage> {
     if (box1 != null && box1!.isOpen) {
       if (box1!.get('email') != null) {
         Email.text = box1!.get("email");
-        print("Get Email Succeses");
+        print("Get Email Success");
       }
       if (box1!.get('pass') != null) {
         pass.text = box1!.get("pass");
-        print("Get Password Succeses");
+        print("Get Password Success");
       }
     }
 
     setState(() {
       ischeck = true;
     });
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   Future<void> login() async {
@@ -91,36 +112,47 @@ class _LoginPageState extends State<LoginPage> {
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        title: GestureDetector(
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
-          child: FutureBuilder<String>(
-            future: getUrlImages1(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.network(
-                    snapshot.data!,
-                    fit: BoxFit.contain,
-                  ),
-                );
-              }
+          automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
             },
+            child: FutureBuilder<String>(
+              future: getUrlImages1(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.network(
+                      snapshot.data!,
+                      fit: BoxFit.contain,
+                    ),
+                  );
+                }
+              },
+            ),
           ),
-        ),
-        centerTitle: true,
-      ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(
+                Provider.of<ThemeProvider>(context).themeData == ligthmode
+                    ? Icons.nightlight_round
+                    : Icons.wb_sunny,
+              ),
+              onPressed: () {
+                Provider.of<ThemeProvider>(context, listen: false)
+                    .toggleTheme();
+              },
+            ),
+          ]),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -145,7 +177,6 @@ class _LoginPageState extends State<LoginPage> {
                       'Log in',
                       style: TextStyle(
                         fontSize: 50,
-                        color: Color.fromARGB(255, 29, 29, 29),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -219,7 +250,6 @@ class _LoginPageState extends State<LoginPage> {
                                 'Remember Me',
                                 style: TextStyle(
                                   fontSize: 14.0,
-                                  color: Colors.black,
                                 ),
                               ),
                             ],
@@ -229,7 +259,7 @@ class _LoginPageState extends State<LoginPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => PhoneAuth()),
+                                    builder: (context) => sendOTPPageState()),
                               );
                             },
                             child: const Text(
@@ -237,7 +267,6 @@ class _LoginPageState extends State<LoginPage> {
                               style: TextStyle(
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 31, 31, 31),
                               ),
                             ),
                           ),
@@ -282,7 +311,6 @@ class _LoginPageState extends State<LoginPage> {
                                   MaterialPageRoute(
                                     builder: (context) => DashboardPage(
                                       userEmail: profile.email,
-                                      userPassword: profile.password,
                                     ),
                                   ),
                                 );
@@ -294,35 +322,50 @@ class _LoginPageState extends State<LoginPage> {
                               }
                             });
                           } on FirebaseAuthException catch (e) {
-                            String errorMessage = "An error occurred";
-                            if (e.code == 'user-not-found') {
-                              errorMessage = 'No user found for that email.';
-                            } else if (e.code == 'wrong-password') {
-                              errorMessage =
-                                  'Wrong password provided for that user.';
-                            }
                             Fluttertoast.showToast(
-                              msg: errorMessage,
-                              gravity: ToastGravity.CENTER,
-                            );
-                          } catch (e) {
-                            print('Error: $e');
-                            Fluttertoast.showToast(
-                              msg: "An error occurred",
+                              msg: e.message.toString(),
                               gravity: ToastGravity.CENTER,
                             );
                           }
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0),
-                      ),
                       child: const Text(
                         'Login',
                         style: TextStyle(
-                          fontSize: 20.0,
-                          color: Color.fromARGB(255, 31, 31, 31),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10.0),
+                    ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          UserCredential userCredential =
+                              await signInWithGoogle();
+
+                          User? user = userCredential.user;
+                          if (user != null) {
+                            String email = user.email!;
+                            String uid = user.uid;
+
+                            Fluttertoast.showToast(
+                              msg: "Google Sign-In Successful",
+                              gravity: ToastGravity.CENTER,
+                            );
+
+                            await getData(email, uid, context);
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          Fluttertoast.showToast(
+                            msg: e.message.toString(),
+                            gravity: ToastGravity.CENTER,
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'Sign in with Google',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -334,7 +377,6 @@ class _LoginPageState extends State<LoginPage> {
                           'Need an account?',
                           style: TextStyle(
                             fontSize: 16.0,
-                            color: Color.fromARGB(255, 31, 31, 31),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -352,12 +394,12 @@ class _LoginPageState extends State<LoginPage> {
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 31, 31, 31),
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ),
@@ -369,15 +411,52 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildCheckbox() {
-    return StatefulBuilder(builder: (context, setState) {
-      return Checkbox(
-        value: ischeck,
-        onChanged: (newbool) {
-          setState(() {
-            ischeck = newbool!;
-          });
-        },
+    return Container(
+      height: 24.0,
+      width: 24.0,
+      child: Transform.scale(
+        scale: 1.2,
+        child: Checkbox(
+          value: ischeck,
+          onChanged: (value) {
+            setState(() {
+              ischeck = value!;
+            });
+          },
+          checkColor: Theme.of(context).colorScheme.primary,
+          activeColor: Theme.of(context).colorScheme.background,
+        ),
+      ),
+    );
+  }
+
+  Future<void> getData(String email, String uid, BuildContext context) async {
+    var collection = FirebaseFirestore.instance.collection('User');
+    var querySnapshot = await collection.where('Email', isEqualTo: email).get();
+
+    if (querySnapshot.docs.isEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserGoogleEmailPage(
+            userEmail: email,
+            userUID: uid,
+          ),
+        ),
       );
-    });
+    } else {
+      // var document = querySnapshot.docs.first;
+      // String emailType = document.data()['EmailType'];
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardPage(
+            userEmail: email,
+            // emailType: emailType,
+          ),
+        ),
+      );
+    }
   }
 }

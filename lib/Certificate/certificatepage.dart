@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 class GenerateCertificate extends StatefulWidget {
   final String recipientName;
   final String userEmail;
-  final String userPassword;
+
 
   GenerateCertificate(
       {required this.recipientName,
       required this.userEmail,
-      required this.userPassword});
+});
 
   @override
   _GenerateCertificateState createState() => _GenerateCertificateState();

@@ -25,7 +25,6 @@ class _SignUpPageState extends State<SignUpPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 255, 254, 254),
         automaticallyImplyLeading: false,
         title: GestureDetector(
           onTap: () {

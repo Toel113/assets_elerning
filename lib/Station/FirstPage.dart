@@ -12,7 +12,6 @@ class FirstPage extends StatefulWidget {
   final String documentName;
   final String subcollectionName;
   final String UserEmail;
-  final String UserPassword;
 
   const FirstPage({
     super.key,
@@ -20,7 +19,6 @@ class FirstPage extends StatefulWidget {
     required this.documentName,
     required this.subcollectionName,
     required this.UserEmail,
-    required this.UserPassword,
   });
 
   @override
@@ -210,8 +208,6 @@ class _FirstPageState extends State<FirstPage> {
                                                             .subcollectionName,
                                                         UserEmail:
                                                             widget.UserEmail,
-                                                        UserPassword:
-                                                            widget.UserPassword,
                                                       )));
                                         } else {
                                           Navigator.pushReplacement(
@@ -223,8 +219,6 @@ class _FirstPageState extends State<FirstPage> {
                                                             widget.documentId,
                                                         UserEmail:
                                                             widget.UserEmail,
-                                                        UserPassword:
-                                                            widget.UserPassword,
                                                       )));
                                         }
                                       },
@@ -250,8 +244,6 @@ class _FirstPageState extends State<FirstPage> {
                                                 subcollectionName:
                                                     widget.subcollectionName,
                                                 UserEmail: widget.UserEmail,
-                                                UserPassword:
-                                                    widget.UserPassword,
                                               ),
                                             ),
                                           );
@@ -262,8 +254,6 @@ class _FirstPageState extends State<FirstPage> {
                                               builder: (context) =>
                                                   DashboardPage(
                                                 userEmail: widget.UserEmail,
-                                                userPassword:
-                                                    widget.UserPassword,
                                               ),
                                             ),
                                           );
@@ -316,9 +306,8 @@ class _FirstPageState extends State<FirstPage> {
       loadingComplete.add(doc.id);
     }
 
-    var userDocs = await FirebaseFirestore.instance.collection('User').get();
-    var nameDocs = userDocs.docs.map((doc) => doc.id).toList();
-    if (nameDocs.isEmpty) {
+    var nameDocs = userDocs?.map((doc) => doc.id).toList();
+    if (nameDocs!.isEmpty) {
       print("No user documents found.");
       return null;
     }
@@ -330,6 +319,8 @@ class _FirstPageState extends State<FirstPage> {
         .collection('Course')
         .doc(documentId);
 
+    print(
+        "--------------------------------------------------------------- $firstDocId -----------------------------------------------");
     double totalDocuments = loadingComplete.length.toDouble();
     double percentageStation = 100 / totalDocuments;
 
@@ -395,34 +386,33 @@ class _FirstPageState extends State<FirstPage> {
 
     var docRef = userDocRef.collection("CompleteCourse").doc(documentId);
     await docRef.set({
-      subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
+      documentId: "${newCompleteValue.toStringAsFixed(2)}%",
       "Status": docsStatus,
-      "Complete $subcollectionName": "Complete Course : $subcollectionName"
+      "Complete $documentId": "Complete Course : $documentId"
     });
   }
 
-  Future<String> _fetchStatusData(
-      String documentId, List<String> nameDocs) async {
-    try {
-      String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
-      DocumentReference userDocRef = FirebaseFirestore.instance
-          .collection('User')
-          .doc(firstDocId)
-          .collection('Course')
-          .doc(documentId);
-
-      var userDocSnapshot = await userDocRef.get();
-      if (userDocSnapshot.exists) {
-        var data = userDocSnapshot.data() as Map<String, dynamic>?;
-        if (data != null && data.containsKey('Status')) {
-          return data['Status'];
-        }
-      }
-    } catch (e) {
-      print('Error fetching getData: $e');
-    }
-    return 'StatusNotFound';
-  }
+  // Future<String> _fetchStatusData(
+  //     String documentId, List<String> nameDocs) async {
+  //   try {
+  //     String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
+  //     DocumentReference userDocRef = FirebaseFirestore.instance
+  //         .collection('User')
+  //         .doc(firstDocId)
+  //         .collection('Course')
+  //         .doc(documentId);
+  //     var userDocSnapshot = await userDocRef.get();
+  //     if (userDocSnapshot.exists) {
+  //       var data = userDocSnapshot.data() as Map<String, dynamic>?;
+  //       if (data != null && data.containsKey('Status')) {
+  //         return data['Status'];
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching getData: $e');
+  //   }
+  //   return 'StatusNotFound';
+  // }
 
   Future<String?> getReturnDocumentID(
       String documentId, String subcollectionName, String documentName) async {

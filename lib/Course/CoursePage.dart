@@ -1,3 +1,5 @@
+import 'package:assets_elerning/Course/dashboard.dart';
+import 'package:assets_elerning/api/loadImages.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
@@ -6,12 +8,10 @@ import 'package:assets_elerning/payment/payment_service.dart';
 
 class CoursePage extends StatefulWidget {
   final String userEmail;
-  final String userPassword;
 
   const CoursePage({
     super.key,
     required this.userEmail,
-    required this.userPassword,
   });
 
   @override
@@ -88,6 +88,38 @@ class _CoursePageState extends State<CoursePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => DashboardPage(
+                        userEmail: widget.userEmail,
+                      )),
+            );
+          },
+          child: FutureBuilder<String>(
+            future: getUrlImages1(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.network(
+                    snapshot.data!,
+                    fit: BoxFit.contain,
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Padding(
@@ -114,7 +146,6 @@ class _CoursePageState extends State<CoursePage> {
                           courseDocs: _filteredDocs,
                           userDocs: userDocs,
                           userEmail: widget.userEmail,
-                          userPassword: widget.userPassword,
                         ),
                 ),
               ],
@@ -130,14 +161,12 @@ class FirestoreDataWidget extends StatelessWidget {
   final List<QueryDocumentSnapshot>? courseDocs;
   final List<QueryDocumentSnapshot>? userDocs;
   final String userEmail;
-  final String userPassword;
 
   const FirestoreDataWidget({
     super.key,
     required this.courseDocs,
     required this.userDocs,
     required this.userEmail,
-    required this.userPassword,
   });
 
   Future<String> _fetchField(String documentId) async {
@@ -222,7 +251,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         builder: (context) => StationPage(
                           documentId: document.id,
                           UserEmail: userEmail,
-                          UserPassword: userPassword,
                         ),
                       ),
                     );
@@ -233,7 +261,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => SellPage(
                               UserEmail: userEmail,
-                              UserPassword: userPassword,
                               nameCourse: document.id,
                               statusValue: statusValue,
                               dataStatus: docStatus,
@@ -248,7 +275,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => SellPage(
                               UserEmail: userEmail,
-                              UserPassword: userPassword,
                               nameCourse: document.id,
                               statusValue: statusValue,
                               dataStatus: docStatus,
@@ -277,7 +303,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         builder: (context) => StationPage(
                           documentId: document.id,
                           UserEmail: userEmail,
-                          UserPassword: userPassword,
                         ),
                       ),
                     );
@@ -288,7 +313,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => SellPage(
                               UserEmail: userEmail,
-                              UserPassword: userPassword,
                               nameCourse: document.id,
                               statusValue: statusValue,
                               dataStatus: docStatus,
@@ -303,7 +327,6 @@ class FirestoreDataWidget extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => SellPage(
                               UserEmail: userEmail,
-                              UserPassword: userPassword,
                               nameCourse: document.id,
                               statusValue: statusValue,
                               dataStatus: docStatus,
@@ -323,9 +346,9 @@ class FirestoreDataWidget extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             margin: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8.0),
+                color: Theme.of(context).colorScheme.primary),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -352,10 +375,10 @@ class FirestoreDataWidget extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   documentName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary),
                 ),
               ],
             ),

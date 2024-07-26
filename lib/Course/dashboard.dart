@@ -1,15 +1,17 @@
-import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'CoursePage.dart';
 import 'package:assets_elerning/Profile/Profile.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userEmail;
-  final String userPassword;
 
-  const DashboardPage(
-      {super.key, required this.userEmail, required this.userPassword});
+  const DashboardPage({
+    super.key,
+    required this.userEmail,
+  });
 
   @override
   _DashboardPageState createState() => _DashboardPageState();
@@ -24,49 +26,17 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _children = [
       CoursePage(
-          userEmail: widget.userEmail, userPassword: widget.userPassword),
+        userEmail: widget.userEmail,
+      ),
       ProfilePage(
-          UserEmail: widget.userEmail, UserPassword: widget.userPassword),
+        userEmail: widget.userEmail,
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myIndex != 2
-          ? AppBar(
-              backgroundColor: Color.fromARGB(255, 255, 255, 255),
-              automaticallyImplyLeading: false,
-              title: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => DashboardPage(
-                            userEmail: widget.userEmail,
-                            userPassword: widget.userPassword)),
-                  );
-                },
-                child: FutureBuilder<String>(
-                  future: getUrlImages1(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Image.network(
-                        snapshot.data!,
-                        fit: BoxFit.contain,
-                      );
-                    }
-                  },
-                ),
-              ),
-              centerTitle: true,
-            )
-          : null,
-      drawer: const NavigationDrawer(),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return IndexedStack(
@@ -76,13 +46,13 @@ class _DashboardPageState extends State<DashboardPage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: myIndex, // Set the current index
-        selectedItemColor: const Color.fromARGB(255, 24, 24, 24),
-        unselectedItemColor: Colors.grey,
+        currentIndex: myIndex, 
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        onTap: (index) {
+        onTap: (index) async {
           if (index == 2) {
+            await GoogleSignIn().signOut();
+            await FirebaseAuth.instance.signOut();
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => LoginPage()),

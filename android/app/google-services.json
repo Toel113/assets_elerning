@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "564309313172-t6fsqhf8e0uv2jc2chqtln9vn7670n8h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.assets_elerning",
+            "certificate_hash": "3573b66c23c62555e388fd71970db6d3c2de7079"
+          }
+        },
+        {
           "client_id": "564309313172-1tc5g725o1jebkkna2f8bf24ipggc0n2.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "564309313172-1tc5g725o1jebkkna2f8bf24ipggc0n2.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "564309313172-akdijs04l8o46aodjeiu4p2hb3cs43kj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.assetsElerning.RunnerTests"
+              }
             }
           ]
         }

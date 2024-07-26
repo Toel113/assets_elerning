@@ -12,7 +12,7 @@ class SellPage extends StatefulWidget {
   final String dataStatus;
   final String userDoc;
   final String UserEmail;
-  final String UserPassword;
+
   final String TextButton;
 
   const SellPage({
@@ -22,7 +22,7 @@ class SellPage extends StatefulWidget {
     required this.dataStatus,
     required this.userDoc,
     required this.UserEmail,
-    required this.UserPassword,
+
     required this.TextButton,
   }) : super(key: key);
 
@@ -77,10 +77,9 @@ class _SellPageState extends State<SellPage> {
   Widget build(BuildContext context) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+
         title: GestureDetector(
           onTap: () {
             Navigator.pushReplacement(
@@ -234,7 +233,7 @@ class _SellPageState extends State<SellPage> {
                                   MaterialPageRoute(
                                     builder: (context) => DashboardPage(
                                       userEmail: widget.UserEmail,
-                                      userPassword: widget.UserPassword,
+                                      
                                     ),
                                   ));
                             } else {
@@ -244,7 +243,7 @@ class _SellPageState extends State<SellPage> {
                                   MaterialPageRoute(
                                     builder: (context) => DashboardPage(
                                       userEmail: widget.UserEmail,
-                                      userPassword: widget.UserPassword,
+                                      
                                     ),
                                   ));
                             }
