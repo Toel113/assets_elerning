@@ -1,3 +1,4 @@
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:assets_elerning/api/loadImages.dart';
@@ -24,7 +25,11 @@ class _StationPageState extends State<StationPage> {
   @override
   void initState() {
     super.initState();
-    fetchCourses(widget.UserEmail);
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    await fetchCourses(widget.UserEmail);
   }
 
   Future<void> fetchCourses(String userEmail) async {
@@ -35,6 +40,10 @@ class _StationPageState extends State<StationPage> {
     setState(() {
       userDocs = querySnapshot.docs;
     });
+  }
+
+  Future<void> _refreshData() async {
+    await _fetchData();
   }
 
   @override
@@ -71,24 +80,29 @@ class _StationPageState extends State<StationPage> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: FirestoreDataWidget(
-                    userDocs: userDocs,
-                    documentId: widget.documentId,
-                    userEmail: widget.UserEmail,
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Center(
+                  child: ResponsiveBox(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: FirestoreDataWidget(
+                        userDocs: userDocs,
+                        documentId: widget.documentId,
+                        userEmail: widget.UserEmail,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -126,7 +140,6 @@ class FirestoreDataWidget extends StatelessWidget {
           itemCount: snapshot.data!.length,
           itemBuilder: (context, index) {
             var subcollectionName = snapshot.data![index];
-
             return SubcollectionDropdown(
               documentId: documentId,
               subcollectionName: subcollectionName,
@@ -216,41 +229,41 @@ class _SubcollectionDropdownState extends State<SubcollectionDropdown> {
           margin: EdgeInsets.symmetric(vertical: 10.0),
           padding: EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.primary),
-              borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(color: Theme.of(context).colorScheme.primary),
+            borderRadius: BorderRadius.circular(8.0),
               color: Theme.of(context).colorScheme.secondary),
           child: DropdownButton<String>(
-            isExpanded: true,
+                  isExpanded: true,
             hint: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Text('Select from ${widget.subcollectionName}'),
-            ),
-            value: selectedDocumentName,
-            items: snapshot.data!.map((documentName) {
-              return DropdownMenuItem<String>(
-                value: documentName,
-                child: Text(documentName),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedDocumentName = newValue;
-              });
-              if (newValue != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FirstPage(
-                      documentId: widget.documentId,
-                      documentName: newValue,
-                      subcollectionName: widget.subcollectionName,
-                      UserEmail: widget.userEmail,
-                    ),
                   ),
-                );
-                print("Selected Document Name: $newValue");
-              }
-            },
+                  value: selectedDocumentName,
+            items: snapshot.data!.map((documentName) {
+                    return DropdownMenuItem<String>(
+                      value: documentName,
+                child: Text(documentName),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedDocumentName = newValue;
+                    });
+                    if (newValue != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FirstPage(
+                            documentId: widget.documentId,
+                            documentName: newValue,
+                            subcollectionName: widget.subcollectionName,
+                            UserEmail: widget.userEmail,
+                          ),
+                        ),
+                      );
+                      print("Selected Document Name: $newValue");
+                    }
+                  },
           ),
         );
       },

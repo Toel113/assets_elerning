@@ -5,6 +5,7 @@ import 'package:assets_elerning/loginadnsigupPage.dart/singup.dart';
 import 'package:assets_elerning/manage/Mainmanage.dart';
 import 'package:assets_elerning/model/User.dart';
 import 'package:assets_elerning/otp_verification/forget_pass.dart';
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:assets_elerning/theme/theme.dart';
 import 'package:assets_elerning/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -70,20 +71,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-    // Obtain the auth details from the request
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
-
-    // Create a new credential
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
-
-    // Once signed in, return the UserCredential
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
@@ -109,7 +103,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -153,254 +146,246 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
           ]),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 20.0,
-            ),
-            child: Container(
-              width: screenWidth * 0.8,
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                border:
-                    Border.all(color: const Color.fromARGB(255, 155, 154, 154)),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Form(
-                key: formkey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Log in',
-                      style: TextStyle(
-                        fontSize: 50,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: TextFormField(
-                        controller: Email,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter your Email',
-                          labelText: 'Email',
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 60),
+          child: ResponsiveContainer(
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color.fromARGB(255, 155, 154, 154)),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Form(
+                  key: formkey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Log in',
+                        style: TextStyle(
+                          fontSize: 50,
                         ),
-                        onSaved: (String? email) {
-                          profile.email = email!;
-                        },
-                        validator: MultiValidator([
-                          RequiredValidator(
-                              errorText: "Please Enter your Email"),
-                          EmailValidator(
-                              errorText: "Email format is incorrect.")
-                        ]),
-                        keyboardType: TextInputType.emailAddress,
                       ),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Stack(
-                        alignment: Alignment.centerRight,
-                        children: [
-                          TextFormField(
-                            controller: pass,
-                            obscureText: _isObscure,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter your Password',
-                              labelText: 'Password',
+                      const SizedBox(height: 30),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: TextFormField(
+                          controller: Email,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your Email',
+                            labelText: 'Email',
+                          ),
+                          onSaved: (String? email) {
+                            profile.email = email!;
+                          },
+                          validator: MultiValidator([
+                            RequiredValidator(
+                                errorText: "Please Enter your Email"),
+                            EmailValidator(
+                                errorText: "Email format is incorrect.")
+                          ]),
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                      ),
+                      const SizedBox(height: 10.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Stack(
+                          alignment: Alignment.centerRight,
+                          children: [
+                            TextFormField(
+                              controller: pass,
+                              obscureText: _isObscure,
+                              decoration: const InputDecoration(
+                                hintText: 'Enter your Password',
+                                labelText: 'Password',
+                              ),
+                              onSaved: (String? password) {
+                                profile.password = password!;
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                return null;
+                              },
                             ),
-                            onSaved: (String? password) {
-                              profile.password = password!;
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              return null;
-                            },
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _isObscure = !_isObscure;
-                              });
-                            },
-                            icon: Icon(_isObscure
-                                ? Icons.visibility
-                                : Icons.visibility_off),
-                          ),
-                        ],
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                              icon: Icon(_isObscure
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              _buildCheckbox(),
-                              const SizedBox(width: 1),
-                              const Text(
-                                'Remember Me',
+                      const SizedBox(height: 10.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                _buildCheckbox(),
+                                const SizedBox(width: 1),
+                                const Text(
+                                  'Remember Me',
+                                  style: TextStyle(
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => sendOTPPageState()),
+                                );
+                              },
+                              child: const Text(
+                                'Forgot password?',
                                 style: TextStyle(
                                   fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => sendOTPPageState()),
-                              );
-                            },
-                            child: const Text(
-                              'Forgot password?',
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (formkey.currentState!.validate()) {
-                          formkey.currentState?.save();
-                          await login();
-                          try {
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                              email: profile.email,
-                              password: profile.password,
-                            )
-                                .then((value) async {
-                              formkey.currentState?.reset();
-                              final adminSnapshot = await FirebaseFirestore
-                                  .instance
-                                  .collection('Admin')
-                                  .where('Email', isEqualTo: profile.email)
-                                  .get();
-                              final userSnapshot = await FirebaseFirestore
-                                  .instance
-                                  .collection('User')
-                                  .where('Email', isEqualTo: profile.email)
-                                  .get();
+                      const SizedBox(height: 20.0),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (formkey.currentState!.validate()) {
+                            formkey.currentState?.save();
+                            await login();
+                            try {
+                              await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                email: profile.email,
+                                password: profile.password,
+                              )
+                                  .then((value) async {
+                                formkey.currentState?.reset();
+                                final adminSnapshot = await FirebaseFirestore
+                                    .instance
+                                    .collection('Admin')
+                                    .where('Email', isEqualTo: profile.email)
+                                    .get();
+                                final userSnapshot = await FirebaseFirestore
+                                    .instance
+                                    .collection('User')
+                                    .where('Email', isEqualTo: profile.email)
+                                    .get();
 
-                              if (adminSnapshot.docs.isNotEmpty) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MainmanagePage(),
-                                  ),
-                                );
-                              } else if (userSnapshot.docs.isNotEmpty) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DashboardPage(
-                                      userEmail: profile.email,
+                                if (adminSnapshot.docs.isNotEmpty) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MainmanagePage(),
                                     ),
-                                  ),
-                                );
-                              } else {
-                                Fluttertoast.showToast(
-                                  msg: "Email or Password incorrect",
-                                  gravity: ToastGravity.CENTER,
-                                );
-                              }
-                            });
+                                  );
+                                } else if (userSnapshot.docs.isNotEmpty) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DashboardPage(
+                                        userEmail: profile.email,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  Fluttertoast.showToast(
+                                    msg: "Email or Password incorrect",
+                                    gravity: ToastGravity.CENTER,
+                                  );
+                                }
+                              });
+                            } on FirebaseAuthException catch (e) {
+                              Fluttertoast.showToast(
+                                msg: e.message.toString(),
+                                gravity: ToastGravity.CENTER,
+                              );
+                            }
+                          }
+                        },
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10.0),
+                      ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            UserCredential userCredential =
+                                await signInWithGoogle();
+
+                            User? user = userCredential.user;
+                            if (user != null) {
+                              String email = user.email!;
+                              String uid = user.uid;
+                              await getData(email, uid, context);
+                            }
                           } on FirebaseAuthException catch (e) {
                             Fluttertoast.showToast(
                               msg: e.message.toString(),
                               gravity: ToastGravity.CENTER,
                             );
                           }
-                        }
-                      },
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10.0),
-                    ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          UserCredential userCredential =
-                              await signInWithGoogle();
-
-                          User? user = userCredential.user;
-                          if (user != null) {
-                            String email = user.email!;
-                            String uid = user.uid;
-
-                            Fluttertoast.showToast(
-                              msg: "Google Sign-In Successful",
-                              gravity: ToastGravity.CENTER,
-                            );
-
-                            await getData(email, uid, context);
-                          }
-                        } on FirebaseAuthException catch (e) {
-                          Fluttertoast.showToast(
-                            msg: e.message.toString(),
-                            gravity: ToastGravity.CENTER,
-                          );
-                        }
-                      },
-                      child: const Text(
-                        'Sign in with Google',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Need an account?',
+                        },
+                        child: const Text(
+                          'Sign in with Google',
                           style: TextStyle(
-                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SignUpPage(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Sign Up',
+                      ),
+                      const SizedBox(height: 10.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Need an account?',
                             style: TextStyle(
                               fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                  ],
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SignUpPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20.0),
+                    ],
+                  ),
                 ),
               ),
             ),

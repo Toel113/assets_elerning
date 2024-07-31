@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:assets_elerning/Certificate/certificatepage.dart';
+import 'package:assets_elerning/Profile/my_course.dart';
 import 'package:assets_elerning/payment/historypurches.dart';
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -123,105 +125,117 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Center(
           child: Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(25.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Color.fromARGB(255, 82, 82, 82),
-                      width: 4,
+      body: Center(
+        child: ResponsiveBox(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Color.fromARGB(255, 82, 82, 82),
+                          width: 4,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundImage: _uploadedImageUrl != null
+                            ? NetworkImage(_uploadedImageUrl!)
+                            : null,
+                        child: _uploadedImageUrl == null
+                            ? Icon(Icons.person, size: 50)
+                            : null,
+                      ),
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 80,
-                    backgroundImage: _uploadedImageUrl != null
-                        ? NetworkImage(_uploadedImageUrl!)
-                        : null,
-                    child: _uploadedImageUrl == null
-                        ? Icon(Icons.person, size: 50)
-                        : null,
+                  const SizedBox(height: 25),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FutureBuilder<String>(
+                        future: getUserData('Fullname'),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            String fullname = snapshot.data ?? 'No Data';
+                            return Text(fullname,
+                                style: TextStyle(
+                                    fontSize: 25, fontWeight: FontWeight.bold));
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 5),
+                      FutureBuilder<String>(
+                        future: getUserData('Email'),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            String email = snapshot.data ?? 'No Data';
+                            String obscuredEmail = obscureEmail(email);
+                            return Text('Email: $obscuredEmail',
+                                style: TextStyle(fontSize: 20));
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 25),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FutureBuilder<String>(
-                    future: getUserData('Fullname'),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else {
-                        String fullname = snapshot.data ?? 'No Data';
-                        return Text(fullname,
-                            style: TextStyle(
-                                fontSize: 25, fontWeight: FontWeight.bold));
-                      }
-                    },
+                  const SizedBox(
+                    height: 20,
                   ),
-                  const SizedBox(height: 5),
-                  FutureBuilder<String>(
-                    future: getUserData('Email'),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      } else {
-                        String email = snapshot.data ?? 'No Data';
-                        String obscuredEmail = obscureEmail(email);
-                        return Text('Email: $obscuredEmail',
-                            style: TextStyle(fontSize: 20));
-                      }
-                    },
+                  BuildEditButton(userEmail: widget.userEmail),
+                  const SizedBox(height: 20),
+                  buildButton(context, 'Purchase History',
+                      Historypurches(userEmail: widget.userEmail)),
+                  const SizedBox(height: 3),
+                  buildButton(context, 'My Course',
+                      MyCoursePage(userEmail: widget.userEmail)),
+                  const SizedBox(height: 3),
+                  buildButton(
+                    context,
+                    'Certificate',
+                    FutureBuilder<String>(
+                      future: getUserData('Fullname'),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return GenerateCertificate(
+                            recipientName: snapshot.data ?? '',
+                            userEmail: widget.userEmail,
+                          );
+                        }
+                      },
+                    ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              BuildEditButton(userEmail: widget.userEmail),
-              const SizedBox(height: 20),
-              buildButton(context, 'Purchase History',
-                  Historypurches(userEmail: widget.userEmail)),
-              buildButton(
-                context,
-                'Certificate',
-                FutureBuilder<String>(
-                  future: getUserData('Fullname'),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return GenerateCertificate(
-                        recipientName: snapshot.data ?? '',
-                        userEmail: widget.userEmail,
-                      );
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),
@@ -394,13 +408,15 @@ class _BuildEditButtonState extends State<BuildEditButton> {
                       children: [
                         const SizedBox(height: 10),
                         buildTextField('Fullname', fullNameController,
-                            'Fullname', _updateUserData),
+                            'Fullname', _updateUserData,
+                            keyboardType: TextInputType.name),
                         if (userType == "AppEmail")
                           buildTextField('Password', passwordController,
                               'Password', _updatePassword,
                               obscureText: true),
                         buildTextField('PhoneNumber', phoneNumberController,
-                            'PhoneNumber', _updateUserData),
+                            'PhoneNumber', _updateUserData,
+                            keyboardType: TextInputType.phone),
                       ],
                     ),
                 ],
@@ -414,7 +430,8 @@ class _BuildEditButtonState extends State<BuildEditButton> {
 
   Widget buildTextField(String labelText, TextEditingController controller,
       String field, Function(String, String) updateFunction,
-      {bool obscureText = false}) {
+      {bool obscureText = false,
+      TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10),
       child: TextField(
@@ -424,6 +441,7 @@ class _BuildEditButtonState extends State<BuildEditButton> {
           labelText: labelText,
           border: OutlineInputBorder(),
         ),
+        keyboardType: keyboardType,
         onSubmitted: (newValue) {
           updateFunction(newValue, field);
         },

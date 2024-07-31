@@ -1,3 +1,5 @@
+import 'package:assets_elerning/api/loadImages.dart';
+import 'package:assets_elerning/manage/Mainmanage.dart';
 import 'package:flutter/material.dart';
 import 'package:assets_elerning/manage/AddCourse.dart';
 import 'package:assets_elerning/manage/deleteCourse.dart';
@@ -32,6 +34,30 @@ class _ManagePageState extends State<ManagePage>
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
+          title: GestureDetector(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MainmanagePage()),
+              );
+            },
+            child: FutureBuilder<String>(
+              future: getUrlImages1(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Image.network(
+                    snapshot.data!,
+                    fit: BoxFit.contain,
+                  );
+                }
+              },
+            ),
+          ),
+          centerTitle: true,
           bottom: TabBar(
             controller: _tabController,
             tabs: const [

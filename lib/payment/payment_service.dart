@@ -1,6 +1,7 @@
 import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -111,153 +112,157 @@ class _SellPageState extends State<SellPage> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container(
+            child: Center(
+              child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Color.fromARGB(255, 109, 109, 109)),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Payment Service',
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 30),
-                      isLandscape
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                    child: _buildInfoBox(
-                                        widget.nameCourse, "Course Name :")),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: FutureBuilder<String>(
-                                    future: getCourseId(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return _buildInfoBox(
-                                            "Loading...", "Course ID :");
-                                      } else if (snapshot.hasError) {
-                                        return _buildInfoBox(
-                                            "Error", "Course ID :");
-                                      } else {
-                                        return _buildInfoBox(
-                                            snapshot.data!, "Course ID :");
-                                      }
-                                    },
+                child: ResponsiveBox(
+                  child: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Color.fromARGB(255, 109, 109, 109)),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Payment Service',
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 30),
+                          isLandscape
+                              ? Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                        child: _buildInfoBox(
+                                            widget.nameCourse, "Course Name :")),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: FutureBuilder<String>(
+                                        future: getCourseId(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return _buildInfoBox(
+                                                "Loading...", "Course ID :");
+                                          } else if (snapshot.hasError) {
+                                            return _buildInfoBox(
+                                                "Error", "Course ID :");
+                                          } else {
+                                            return _buildInfoBox(
+                                                snapshot.data!, "Course ID :");
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    _buildInfoBox(
+                                        widget.nameCourse, "Course Name :"),
+                                    SizedBox(height: 10),
+                                    FutureBuilder<String>(
+                                      future: getCourseId(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return _buildInfoBox(
+                                              "Loading...", "Course ID :");
+                                        } else if (snapshot.hasError) {
+                                          return _buildInfoBox(
+                                              "Error", "Course ID :");
+                                        } else {
+                                          return _buildInfoBox(
+                                              snapshot.data!, "Course ID :");
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                          SizedBox(height: 20),
+                          FutureBuilder<String>(
+                            future: getAmount(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data != "") {
+                                return Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color:
+                                              Color.fromARGB(255, 255, 255, 255)),
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    child: QrImageView(
+                                      data: snapshot.data!,
+                                      version: QrVersions.auto,
+                                      size: constraints.maxWidth * 0.6,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                _buildInfoBox(
-                                    widget.nameCourse, "Course Name :"),
-                                SizedBox(height: 10),
-                                FutureBuilder<String>(
-                                  future: getCourseId(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return _buildInfoBox(
-                                          "Loading...", "Course ID :");
-                                    } else if (snapshot.hasError) {
-                                      return _buildInfoBox(
-                                          "Error", "Course ID :");
-                                    } else {
-                                      return _buildInfoBox(
-                                          snapshot.data!, "Course ID :");
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                      SizedBox(height: 20),
-                      FutureBuilder<String>(
-                        future: getAmount(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data != "") {
-                            return Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(4.0),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color:
-                                          Color.fromARGB(255, 255, 255, 255)),
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                child: QrImageView(
-                                  data: snapshot.data!,
-                                  version: QrVersions.auto,
-                                  size: constraints.maxWidth * 0.6,
-                                ),
+                                );
+                              } else {
+                                return SizedBox.shrink();
+                              }
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          FutureBuilder<String>(
+                            future: getAmount(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return _buildInfoBox("Loading...", "Amount :");
+                              } else if (snapshot.hasError) {
+                                return _buildInfoBox("Error", "Amount :");
+                              } else {
+                                return _buildInfoBox(
+                                    "${snapshot.data!} .-", "Amount :");
+                              }
+                            },
+                          ),
+                          SizedBox(height: 30),
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (widget.statusValue == widget.dataStatus) {
+                                  upDateGetData();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DashboardPage(
+                                          userEmail: widget.UserEmail,
+                                          
+                                        ),
+                                      ));
+                                } else {
+                                  upDateGetData();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DashboardPage(
+                                          userEmail: widget.UserEmail,
+                                          
+                                        ),
+                                      ));
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(200, 60),
                               ),
-                            );
-                          } else {
-                            return SizedBox.shrink();
-                          }
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      FutureBuilder<String>(
-                        future: getAmount(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return _buildInfoBox("Loading...", "Amount :");
-                          } else if (snapshot.hasError) {
-                            return _buildInfoBox("Error", "Amount :");
-                          } else {
-                            return _buildInfoBox(
-                                "${snapshot.data!} .-", "Amount :");
-                          }
-                        },
-                      ),
-                      SizedBox(height: 30),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (widget.statusValue == widget.dataStatus) {
-                              upDateGetData();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DashboardPage(
-                                      userEmail: widget.UserEmail,
-                                      
-                                    ),
-                                  ));
-                            } else {
-                              upDateGetData();
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DashboardPage(
-                                      userEmail: widget.UserEmail,
-                                      
-                                    ),
-                                  ));
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(200, 60),
+                              child: Text(
+                                widget.TextButton,
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
                           ),
-                          child: Text(
-                            widget.TextButton,
-                            style: TextStyle(fontSize: 20),
-                          ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),

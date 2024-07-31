@@ -113,7 +113,6 @@ class _adminRegisPageState extends State<adminRegisPage> {
                       'Already have an account?',
                       style: TextStyle(
                         fontSize: 16.0,
-                        
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -129,7 +128,6 @@ class _adminRegisPageState extends State<adminRegisPage> {
                         style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
-                         
                         ),
                       ),
                     )
@@ -212,7 +210,6 @@ class _adminRegisPageState extends State<adminRegisPage> {
         'Sign Up',
         style: TextStyle(
           fontSize: 25.0,
-         
         ),
       ),
     );

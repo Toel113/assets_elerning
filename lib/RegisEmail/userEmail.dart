@@ -1,6 +1,5 @@
 import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 
@@ -26,11 +25,6 @@ class _UserGoogleEmailPageState extends State<UserGoogleEmailPage> {
   final formkey = GlobalKey<FormState>();
 
   Future<void> setDataGoogleEmail() async {
-    print('UserUID: ${widget.userUID}');
-    print('Email: ${widget.userEmail}');
-    print('Fullname: ${user.fullname}');
-    print('Phonenumber: ${user.phonenumber}');
-
     if (widget.userUID.isEmpty) {
       throw ArgumentError('UserUID cannot be empty');
     }
@@ -49,49 +43,55 @@ class _UserGoogleEmailPageState extends State<UserGoogleEmailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Center(child: Text('User Profile')),
+        automaticallyImplyLeading: true,
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-              border: Border.all(color: Color.fromARGB(255, 154, 154, 154)),
-              borderRadius: BorderRadius.circular(10)),
+            color: Theme.of(context).colorScheme.background,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
           child: Form(
             key: formkey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text("Add Profile Data."),
-                SizedBox(
-                  height: 20,
-                ),
+                SizedBox(height: 20),
                 buildTextFormField(
-                  hintText: 'Enter your FullName',
-                  labelText: 'FullName',
-                  onSaved: (String? fullname) {
-                    user.fullname = fullname!;
-                  },
-                  validator:
-                      RequiredValidator(errorText: "Please Enter your FullName")
-                          .call,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
+                    hintText: 'Enter your Full Name',
+                    labelText: 'Full Name',
+                    onSaved: (String? fullname) {
+                      user.fullname = fullname!;
+                    },
+                    validator: RequiredValidator(
+                      errorText: "Please enter your Full Name",
+                    ).call,
+                    note: "Please enter your full name."),
+                SizedBox(height: 16),
                 buildTextFormField(
-                  hintText: 'Enter your Phone Number',
-                  labelText: 'Phone Number',
-                  onSaved: (String? phonenumber) {
-                    user.phonenumber = phonenumber!;
-                  },
-                  keyboardType: TextInputType.phone,
-                  validator: RequiredValidator(
-                          errorText: "Please Enter your Phone Number")
-                      .call,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
+                    hintText: 'Enter your Phone Number',
+                    labelText: 'Phone Number',
+                    onSaved: (String? phonenumber) {
+                      user.phonenumber = phonenumber!;
+                    },
+                    keyboardType: TextInputType.phone,
+                    validator: RequiredValidator(
+                      errorText: "Please enter your Phone Number",
+                    ).call,
+                    note: "Please enter your phone number."),
+                SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     if (formkey.currentState?.validate() ?? false) {
@@ -102,13 +102,15 @@ class _UserGoogleEmailPageState extends State<UserGoogleEmailPage> {
                         MaterialPageRoute(
                           builder: (context) => DashboardPage(
                             userEmail: widget.userEmail,
-                            
                           ),
                         ),
                       );
                     }
                   },
-                  child: Text('Set Data'),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ],
             ),
@@ -125,19 +127,30 @@ class _UserGoogleEmailPageState extends State<UserGoogleEmailPage> {
     required String? Function(String?) validator,
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
+    required String note,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 27.0),
-      child: TextFormField(
-        decoration: InputDecoration(
-          hintText: hintText,
-          labelText: labelText,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          decoration: InputDecoration(
+            hintText: hintText,
+            labelText: labelText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+          onSaved: onSaved,
+          validator: validator,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
         ),
-        onSaved: onSaved,
-        validator: validator,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-      ),
+        SizedBox(
+          height: 10,
+        ),
+        Text('* $note')
+      ],
     );
   }
 }

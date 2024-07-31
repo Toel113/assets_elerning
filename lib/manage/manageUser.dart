@@ -1,3 +1,6 @@
+import 'package:assets_elerning/api/loadImages.dart';
+import 'package:assets_elerning/manage/Mainmanage.dart';
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -77,46 +80,84 @@ class _ManageUserPageState extends State<ManageUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 10),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: RefreshIndicator(
-                onRefresh: _refresh,
-                child: ListView.builder(
-                  itemCount: userDocs?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    var document = userDocs![index];
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(5.0),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Color.fromARGB(255, 154, 154, 154)),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: ListTile(
-                          title: NameColumn(
-                            document: document,
-                            getDatashowName: getDatashowName,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: GestureDetector(
+          onTap: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainmanagePage()),
+            );
+          },
+          child: FutureBuilder<String>(
+            future: getUrlImages1(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return Image.network(
+                  snapshot.data!,
+                  fit: BoxFit.contain,
+                );
+              }
+            },
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: ResponsiveBox(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: 10),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView.builder(
+                      itemCount: userDocs?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        var document = userDocs![index];
+                        return Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(5.0),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.background,
+                              borderRadius: BorderRadius.circular(10.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              title: NameColumn(
+                                document: document,
+                                getDatashowName: getDatashowName,
+                              ),
+                              subtitle: CourseDropdownColumn(
+                                document: document,
+                                getDataDropdown: getDataDropdown,
+                              ),
+                            ),
                           ),
-                          subtitle: CourseDropdownColumn(
-                            document: document,
-                            getDataDropdown: getDataDropdown,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

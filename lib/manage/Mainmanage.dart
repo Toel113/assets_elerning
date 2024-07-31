@@ -1,4 +1,4 @@
-import 'package:assets_elerning/api/loadImages.dart';
+
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
 import 'package:assets_elerning/manage/manageCourse.dart';
 import 'package:assets_elerning/manage/manageUser.dart';
@@ -20,37 +20,7 @@ class _MainmanagePageState extends State<MainmanagePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: myIndex != 2
-          ? AppBar(
-              automaticallyImplyLeading: false,
-              title: GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MainmanagePage()),
-                  );
-                },
-                child: FutureBuilder<String>(
-                  future: getUrlImages1(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return Image.network(
-                        snapshot.data!,
-                        fit: BoxFit.contain,
-                      );
-                    }
-                  },
-                ),
-              ),
-              centerTitle: true,
-            )
-          : null,
+    return Scaffold(      
       body: IndexedStack(
         index: myIndex,
         children: _children,

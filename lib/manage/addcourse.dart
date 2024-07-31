@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -89,6 +90,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
               "Status": selectStatus,
               "Course ID": "00${rng.randomNumber}",
               "images": urlDownload,
+              "Detail": courseData.detailCourse,
             });
           }
           if (!DataStation.contains(courseData.docname)) {
@@ -414,213 +416,255 @@ class _AddCoursePageState extends State<AddCoursePage> {
     }
   }
 
+  Future<void> _refreshData() async {
+    await getDocument();
+    await getCourse();
+    await getStation();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                      color: const Color.fromARGB(255, 155, 154, 154)),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10.0),
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: DropdownButtonFormField<String>(
-                            value: selectValue,
-                            items: items1
-                                .map((item) => DropdownMenuItem<String>(
-                                      value: item,
-                                      child: Text(item),
-                                    ))
-                                .toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectValue = newValue;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Select Course Name',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (selectValue == "newValue")
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: DropdownButtonFormField<String>(
-                              value: selectStatus,
-                              items: items2
-                                  .map((item) => DropdownMenuItem<String>(
-                                        value: item,
-                                        child: Text(item),
-                                      ))
-                                  .toList(),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  selectStatus = newValue;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                labelText: 'Select Status',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (selectValue == "newValue")
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: TextFormField(
-                              onChanged: (value) {
-                                setState(() {
-                                  courseData.coursename = value;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                labelText: 'Course name',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a course name';
-                                }
-                                if (DataCourse.contains(
-                                    courseData.coursename)) {
-                                  return 'This Course already exists';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: TextFormField(
-                            onChanged: (value) {
-                              setState(() {
-                                courseData.docname = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Document name',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a document name';
-                              }
-                              if (DataStation.contains(courseData.docname)) {
-                                return 'This Station Already exists';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        if (selectStatus == "True")
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: TextFormField(
-                              onChanged: (value) {
-                                setState(() {
-                                  courseData.amountCourse = value;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                labelText: 'Amount of courses',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter the amount of courses';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        if (selectValue == "newValue")
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: selectFile,
-                                  icon: Icon(Icons.attach_file),
-                                  label: Text('Upload Image'),
-                                ),
-                                if (imageUploadProgress > 0)
-                                  LinearProgressIndicator(
-                                    value: imageUploadProgress,
+      body: Center(
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          child: ResponsiveBox(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Color.fromARGB(255, 0, 0, 0)),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 10.0),
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: DropdownButtonFormField<String>(
+                                  value: selectValue,
+                                  items: items1
+                                      .map((item) => DropdownMenuItem<String>(
+                                            value: item,
+                                            child: Text(item),
+                                          ))
+                                      .toList(),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      selectValue = newValue;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Select Course Name',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                              ],
-                            ),
+                                ),
+                              ),
+                              if (selectValue == "newValue")
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectStatus,
+                                    items: items2
+                                        .map((item) => DropdownMenuItem<String>(
+                                              value: item,
+                                              child: Text(item),
+                                            ))
+                                        .toList(),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        selectStatus = newValue;
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Select Status',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (selectValue == "newValue")
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: TextFormField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        courseData.coursename = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Course name',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter a course name';
+                                      }
+                                      if (DataCourse.contains(
+                                          courseData.coursename)) {
+                                        return 'This Course already exists';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              if (selectValue == "newValue")
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: TextFormField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        courseData.detailCourse = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Detail Course',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter a Detail Course ';
+                                      }
+                                      if (DataCourse.contains(
+                                          courseData.coursename)) {
+                                        return 'This Detail already exists';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: TextFormField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      courseData.docname = value;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Document name',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a document name';
+                                    }
+                                    if (DataStation.contains(
+                                        courseData.docname)) {
+                                      return 'This Station Already exists';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              if (selectStatus == "True")
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: TextFormField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        courseData.amountCourse = value;
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Amount of courses',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter the amount of courses';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              if (selectValue == "newValue")
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: selectFile,
+                                        icon: Icon(Icons.attach_file),
+                                        label: Text('Upload Image'),
+                                      ),
+                                      if (imageUploadProgress > 0)
+                                        LinearProgressIndicator(
+                                          value: imageUploadProgress,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(height: 10),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: stationData.length,
+                                itemBuilder: (context, index) {
+                                  return createRow(index);
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    stationData.add(
+                                        {'stationname': '', 'videosurl': ''});
+                                    videoUploadProgress.add(0.0);
+                                  });
+                                },
+                                child: const Text('Add Row'),
+                              ),
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      _formKey.currentState?.save();
+                                      addCourseToFirestore();
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        60.0, 20.0, 60.0, 20.0),
+                                  ),
+                                  icon: Icon(Icons.save),
+                                  label: Text('Save'),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
-                        const SizedBox(height: 10),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: stationData.length,
-                          itemBuilder: (context, index) {
-                            return createRow(index);
-                          },
                         ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              stationData
-                                  .add({'stationname': '', 'videosurl': ''});
-                              videoUploadProgress.add(0.0);
-                            });
-                          },
-                          child: const Text('Add Row'),
-                        ),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                _formKey.currentState?.save();
-                                addCourseToFirestore();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.fromLTRB(
-                                  60.0, 20.0, 60.0, 20.0),
-                            ),
-                            icon: Icon(Icons.save),
-                            label: Text('Save'),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -632,4 +676,5 @@ class Courses {
   String coursename = '';
   String docname = '';
   String amountCourse = '';
+  String detailCourse = '';
 }

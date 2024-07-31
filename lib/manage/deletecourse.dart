@@ -1,3 +1,4 @@
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -61,74 +62,101 @@ class _DeleteCoursePageState extends State<DeleteCoursePage> {
     return dataNames;
   }
 
+  Future<void> _refresh() async {
+    setState(() async {
+      await fetchName();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
         child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: userDocs == null || userDocs!.isEmpty
-                      ? Center(child: Text('No courses found'))
-                      : ListView.builder(
-                          itemCount: userDocs!.length,
-                          itemBuilder: (context, index) {
-                            var document = userDocs![index];
-                            var documentName = document.id;
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: const Color.fromARGB(
-                                          255, 155, 154, 154)),
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Container(
+          child: ResponsiveBox(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: userDocs == null || userDocs!.isEmpty
+                            ? Center(child: Text('No courses found'))
+                            : ListView.builder(
+                                itemCount: userDocs!.length,
+                                itemBuilder: (context, index) {
+                                  var document = userDocs![index];
+                                  var documentName = document.id;
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Container(
                                       decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: const Color.fromARGB(
-                                                255, 155, 154, 154)),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(8.0),
-                                          topRight: Radius.circular(8.0),
-                                        ),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .background,
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            spreadRadius: 2,
+                                            blurRadius: 5,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text(documentName),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Color.fromARGB(
+                                                      255, 0, 0, 0)),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(8.0),
+                                                topRight: Radius.circular(8.0),
+                                              ),
+                                            ),
+                                            child: Align(
+                                              alignment: Alignment.center,
+                                              child: Text(documentName),
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: CourseDropdownColumn(
+                                              document: document,
+                                              getDataDropdown: getDataDropdown,
+                                              onCourseDeleted: () {
+                                                fetchName();
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 20,
+                                          )
+                                        ],
                                       ),
                                     ),
-                                    SizedBox(height: 10),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: CourseDropdownColumn(
-                                        document: document,
-                                        getDataDropdown: getDataDropdown,
-                                        onCourseDeleted: () {
-                                          fetchName(); // Refresh userDocs
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -242,10 +270,10 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              height: 40,
+              height: 55,
               child: dropdownItems.isEmpty
                   ? Center(child: Text('No courses found'))
-                  : DropdownButton<String>(
+                  : DropdownButtonFormField<String>(
                       value: selectedValue,
                       onChanged: (newValue) {
                         setState(() {
@@ -258,6 +286,13 @@ class _CourseDropdownColumnState extends State<CourseDropdownColumn> {
                           child: Text(item),
                         );
                       }).toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Select Course',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          
+                        ),
+                      ),
                     ),
             ),
           ),

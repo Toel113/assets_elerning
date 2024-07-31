@@ -2,6 +2,7 @@ import 'package:assets_elerning/Course/dashboard.dart';
 import 'package:assets_elerning/Course/stationPage.dart';
 import 'package:assets_elerning/api/loadImages.dart';
 import 'package:assets_elerning/loginadnsigupPage.dart/login.dart';
+import 'package:assets_elerning/theme/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -99,190 +100,194 @@ class _FirstPageState extends State<FirstPage> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: const Color.fromARGB(255, 155, 154, 154)),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        Center(
-                          child: FutureBuilder<List<String>>(
-                            future: getNameDocumentSubCollection(
-                              widget.documentId,
-                              widget.subcollectionName,
-                              widget.documentName,
-                            ),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              } else if (!snapshot.hasData ||
-                                  snapshot.data!.isEmpty) {
-                                return const Text('No data found.');
-                              } else {
-                                return Column(
-                                  children: snapshot.data!
-                                      .map((name) => Text(
-                                            name,
-                                            style:
-                                                const TextStyle(fontSize: 20),
-                                          ))
-                                      .toList(),
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        FutureBuilder<List<String>>(
-                          future: getDocumentsInSubcollection(
-                            widget.documentId,
-                            widget.subcollectionName,
-                            widget.documentName,
-                          ),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            } else if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            } else if (!snapshot.hasData ||
-                                snapshot.data!.isEmpty) {
-                              return const Text('No data found.');
-                            } else {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: snapshot.data!.map((url) {
-                                  return Column(
-                                    children: [
-                                      VideoPlayerWidget(videoUrl: url),
-                                      const SizedBox(height: 10),
-                                    ],
-                                  );
-                                }).toList(),
-                              );
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+      body: Center(
+        child: ResponsiveBox(
+          child: SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: const Color.fromARGB(255, 155, 154, 154)),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Row(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        String? returnDocumentID =
-                                            await getReturnDocumentID(
-                                                widget.documentId,
-                                                widget.subcollectionName,
-                                                widget.documentName);
-                                        if (returnDocumentID != null) {
-                                          Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      FirstPage(
-                                                        documentId:
-                                                            widget.documentId,
-                                                        documentName:
-                                                            returnDocumentID,
-                                                        subcollectionName: widget
-                                                            .subcollectionName,
-                                                        UserEmail:
-                                                            widget.UserEmail,
-                                                      )));
-                                        } else {
-                                          Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      StationPage(
-                                                        documentId:
-                                                            widget.documentId,
-                                                        UserEmail:
-                                                            widget.UserEmail,
-                                                      )));
-                                        }
-                                      },
-                                      child: const Text('Previous Lesson'),
-                                    ),
-                                    const SizedBox(width: 30),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        await _updatePercentage();
-                                        String? nextDocumentID =
-                                            await getNextDocumentID(
-                                          widget.documentId,
-                                          widget.subcollectionName,
-                                          widget.documentName,
-                                        );
-                                        if (nextDocumentID != null) {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => FirstPage(
-                                                documentId: widget.documentId,
-                                                documentName: nextDocumentID,
-                                                subcollectionName:
-                                                    widget.subcollectionName,
-                                                UserEmail: widget.UserEmail,
-                                              ),
-                                            ),
-                                          );
-                                        } else {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  DashboardPage(
-                                                userEmail: widget.UserEmail,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                      child: const Text('Continue'),
-                                    ),
-                                    const SizedBox(height: 20)
-                                  ],
+                            const SizedBox(height: 20),
+                            Center(
+                              child: FutureBuilder<List<String>>(
+                                future: getNameDocumentSubCollection(
+                                  widget.documentId,
+                                  widget.subcollectionName,
+                                  widget.documentName,
                                 ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Text('No data found.');
+                                  } else {
+                                    return Column(
+                                      children: snapshot.data!
+                                          .map((name) => Text(
+                                                name,
+                                                style:
+                                                    const TextStyle(fontSize: 20),
+                                              ))
+                                          .toList(),
+                                    );
+                                  }
+                                },
                               ),
-                            )
+                            ),
+                            const SizedBox(height: 20),
+                            FutureBuilder<List<String>>(
+                              future: getDocumentsInSubcollection(
+                                widget.documentId,
+                                widget.subcollectionName,
+                                widget.documentName,
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                } else if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return const Text('No data found.');
+                                } else {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: snapshot.data!.map((url) {
+                                      return Column(
+                                        children: [
+                                          VideoPlayerWidget(videoUrl: url),
+                                          const SizedBox(height: 10),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  );
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Row(
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            String? returnDocumentID =
+                                                await getReturnDocumentID(
+                                                    widget.documentId,
+                                                    widget.subcollectionName,
+                                                    widget.documentName);
+                                            if (returnDocumentID != null) {
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          FirstPage(
+                                                            documentId:
+                                                                widget.documentId,
+                                                            documentName:
+                                                                returnDocumentID,
+                                                            subcollectionName: widget
+                                                                .subcollectionName,
+                                                            UserEmail:
+                                                                widget.UserEmail,
+                                                          )));
+                                            } else {
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          StationPage(
+                                                            documentId:
+                                                                widget.documentId,
+                                                            UserEmail:
+                                                                widget.UserEmail,
+                                                          )));
+                                            }
+                                          },
+                                          child: const Text('Previous Lesson'),
+                                        ),
+                                        const SizedBox(width: 30),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            await _updatePercentage();
+                                            String? nextDocumentID =
+                                                await getNextDocumentID(
+                                              widget.documentId,
+                                              widget.subcollectionName,
+                                              widget.documentName,
+                                            );
+                                            if (nextDocumentID != null) {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => FirstPage(
+                                                    documentId: widget.documentId,
+                                                    documentName: nextDocumentID,
+                                                    subcollectionName:
+                                                        widget.subcollectionName,
+                                                    UserEmail: widget.UserEmail,
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DashboardPage(
+                                                    userEmail: widget.UserEmail,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: const Text('Continue'),
+                                        ),
+                                        const SizedBox(height: 20)
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 20),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 80),
+                    Padding(
+                      padding: const EdgeInsets.all(50.0),
+                      child: ProgressIndicatorWidget(
+                        subcollection: widget.subcollectionName,
+                        userDocs: userDocs,
+                        documentId: widget.documentId,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 80),
-                Padding(
-                  padding: const EdgeInsets.all(50.0),
-                  child: ProgressIndicatorWidget(
-                    subcollection: widget.subcollectionName,
-                    userDocs: userDocs,
-                    documentId: widget.documentId,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -293,6 +298,7 @@ class _FirstPageState extends State<FirstPage> {
   Future<double?> getLoadingComplete(
       String documentId, String subcollectionName, String documentName) async {
     List<String> loadingComplete = [];
+    String nameDocument = documentName.substring(2).replaceAll('.', '');
     var docRef =
         FirebaseFirestore.instance.collection('Course').doc(documentId);
     var subcollection = await docRef.collection(subcollectionName).get();
@@ -319,8 +325,6 @@ class _FirstPageState extends State<FirstPage> {
         .collection('Course')
         .doc(documentId);
 
-    print(
-        "--------------------------------------------------------------- $firstDocId -----------------------------------------------");
     double totalDocuments = loadingComplete.length.toDouble();
     double percentageStation = 100 / totalDocuments;
 
@@ -349,25 +353,35 @@ class _FirstPageState extends State<FirstPage> {
       newCompleteCourse = 100;
     }
 
-    Map<String, dynamic> updateData = {
-      subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
-    };
+    if (userDocSnapshot.exists) {
+      var data = userDocSnapshot.data() as Map<String, dynamic>;
+      var completeVideos = data.containsKey('CompleteVideos')
+          ? data['CompleteVideos'] as Map<String, dynamic>
+          : <String, dynamic>{};
+      if (completeVideos[nameDocument] != "Pass") {
+        Map<String, dynamic> updateData = {
+          subcollectionName: "${newCompleteValue.toStringAsFixed(2)}%",
+          "CompleteVideos.$nameDocument": "Pass"
+        };
 
-    if (newCompleteValue >= 99.99) {
-      newCompleteValue = 100;
-      updateData[subcollectionName] = "${newCompleteValue.toStringAsFixed(2)}%";
-      updateData["Complete $subcollectionName"] =
-          "Complete : $subcollectionName";
-      updateData["Complete $documentId"] =
-          "${newCompleteCourse.toStringAsFixed(2)}%";
+        if (newCompleteValue >= 99.99) {
+          newCompleteValue = 100;
+          updateData[subcollectionName] =
+              "${newCompleteValue.toStringAsFixed(2)}%";
+          updateData["Complete $subcollectionName"] =
+              "Complete : $subcollectionName";
+          updateData["Complete $documentId"] =
+              "${newCompleteCourse.toStringAsFixed(2)}%";
 
-      if (newCompleteCourse == 100) {
-        await setUpdateComplete("Complete : $documentId", documentId,
-            subcollectionName, newCompleteValue);
+          if (newCompleteCourse == 100) {
+            await setUpdateComplete("Complete : $documentId", documentId,
+                subcollectionName, newCompleteValue);
+          }
+        }
+
+        await userDocRef.update(updateData);
       }
     }
-
-    await userDocRef.update(updateData);
 
     return newCompleteValue;
   }
@@ -392,7 +406,7 @@ class _FirstPageState extends State<FirstPage> {
     });
   }
 
-  // Future<String> _fetchStatusData(
+  // Future<String> _fetchStatusD ata(
   //     String documentId, List<String> nameDocs) async {
   //   try {
   //     String firstDocId = nameDocs.isNotEmpty ? nameDocs[0] : '';
@@ -538,6 +552,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController _videoPlayerController;
   late ChewieController _chewieController;
   bool _isVideoInitialized = false;
+  double _aspectRatio = 16 / 9;
 
   @override
   void initState() {
@@ -548,28 +563,28 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   void _initializePlayer() async {
     _videoPlayerController = VideoPlayerController.network(widget.videoUrl);
     await _videoPlayerController.initialize();
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-      autoInitialize: true,
-      looping: false,
-      allowPlaybackSpeedChanging: true,
-      aspectRatio: 16 / 9,
-      autoPlay: false,
-      errorBuilder: (context, errorMessage) {
-        return Center(
-          child: Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white),
-          ),
-        );
-      },
-    );
 
-    if (mounted) {
-      setState(() {
-        _isVideoInitialized = true;
-      });
-    }
+    // Determine aspect ratio based on video dimensions
+    setState(() {
+      _aspectRatio = _videoPlayerController.value.aspectRatio;
+      _chewieController = ChewieController(
+        videoPlayerController: _videoPlayerController,
+        autoInitialize: true,
+        looping: false,
+        allowPlaybackSpeedChanging: true,
+        aspectRatio: _aspectRatio,
+        autoPlay: false,
+        errorBuilder: (context, errorMessage) {
+          return Center(
+            child: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white),
+            ),
+          );
+        },
+      );
+      _isVideoInitialized = true;
+    });
   }
 
   @override
@@ -580,11 +595,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       );
     }
 
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      height: 300,
-      child: Chewie(
-        controller: _chewieController,
+    return Container(
+      width: double.infinity,
+      height: 200, // Set the height as needed
+      child: AspectRatio(
+        aspectRatio: _aspectRatio,
+        child: Chewie(
+          controller: _chewieController,
+        ),
       ),
     );
   }
